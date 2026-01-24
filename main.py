@@ -163,17 +163,23 @@ canvas.create_line(0, CENTRE_Y, 400, CENTRE_Y, width=2, arrow=tk.LAST) # Axe X (
 
 # 3. Les numéros sur les axes
 for i in range(-4, 5):
-    if i == 0: continue # On ne marque pas le 0 deux fois
+    # Cas spécial pour le Zéro (l'origine)
+    if i == 0: 
+        # On l'affiche un peu décalé (en bas à gauche) pour ne pas gêner le centre
+        canvas.create_text(CENTRE_X - 10, CENTRE_Y + 12, text="0", font=("Arial", 8, "bold"))
+        continue 
+    
     px = CENTRE_X + (i * ECHELLE)
     py = CENTRE_Y - (i * ECHELLE)
+    
     # Chiffres sur l'axe X
     canvas.create_text(px, CENTRE_Y + 15, text=str(i), font=("Arial", 8))
     # Chiffres sur l'axe Y
     canvas.create_text(CENTRE_X - 15, py, text=str(i), font=("Arial", 8))
 
+# Les labels X et Y au bout des flèches
 canvas.create_text(380, CENTRE_Y - 15, text="X", font=("Arial", 10, "bold"))
 canvas.create_text(CENTRE_X + 15, 20, text="Y", font=("Arial", 10, "bold"))
-
 
 # Cadre Droit : Commandes
 frame_commandes = tk.Frame(fenetre, padx=20)
