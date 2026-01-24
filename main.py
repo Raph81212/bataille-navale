@@ -1,135 +1,188 @@
+import tkinter as tk
+from tkinter import messagebox
 import random
 
-# --- 1. CRÉATION DE LA GRILLE (9x9) ---
-# Une grille vide remplie de 0 (Eau)
+# --- 1. LOGIQUE DU JEU (Inchangée) ---
 grille = []
-for ligne in range(9):
-    grille.append([0] * 9)
-
-# Dictionnaire pour suivre l'état de chaque bateau
-# Structure : { "Nom du bateau": [(x,y), (x,y)...] }
 flotte = {}
 
-# Liste des bateaux à placer (Nom, Taille)
-types_bateaux = [
-    ("Porte-Avions", 5),
-    ("Croiseur", 4),
-    ("Contre-Torpilleur", 3),
-    ("Torpilleur", 2)
-]
+def init_jeu():
+    global grille, flotte
+    grille = []
+    flotte = {}
+    # Grille 9x9 vide
+    for ligne in range(9):
+        grille.append([0] * 9)
 
-# --- 2. PLACEMENT DES BATEAUX ---
-print("Initialisation de la flotte en cours...")
+    types_bateaux = [("Porte-Avions", 5), ("Croiseur", 4), 
+                     ("Contre-Torpilleur", 3), ("Torpilleur", 2)]
 
-for nom, taille in types_bateaux:
-    place = False
-    while place == False:
-        # On choisit une direction (0: Horizontal, 1: Vertical)
-        direction = random.randint(0, 1)
-        
-        if direction == 0: # Horizontal
-            # On limite le départ pour ne pas sortir du cadre (9 - taille)
-            col_depart = random.randint(0, 9 - taille)
-            lig_depart = random.randint(0, 8)
-            
-            # Vérification des collisions
-            libre = True
-            for i in range(taille):
-                if grille[lig_depart][col_depart + i] != 0:
-                    libre = False
-                    break
-            
-            # Si tout est libre, on place le bateau
-            if libre:
-                coords_bateau = [] # Pour mémoriser les positions
+    for nom, taille in types_bateaux:
+        place = False
+        while not place:
+            direction = random.randint(0, 1)
+            if direction == 0: # Horizontal
+                c_dep = random.randint(0, 9 - taille)
+                l_dep = random.randint(0, 8)
+                libre = True
                 for i in range(taille):
-                    grille[lig_depart][col_depart + i] = 1
-                    coords_bateau.append((col_depart + i, lig_depart)) # On stocke (col, lig)
-                
-                flotte[nom] = coords_bateau # On ajoute le bateau au dictionnaire
-                place = True
-
-        else: # Vertical
-            col_depart = random.randint(0, 8)
-            lig_depart = random.randint(0, 9 - taille)
-            
-            libre = True
-            for i in range(taille):
-                if grille[lig_depart + i][col_depart] != 0:
-                    libre = False
-                    break
-            
-            if libre:
-                coords_bateau = []
+                    if grille[l_dep][c_dep + i] != 0: libre = False; break
+                if libre:
+                    coords = []
+                    for i in range(taille):
+                        grille[l_dep][c_dep + i] = 1
+                        coords.append((c_dep + i, l_dep))
+                    flotte[nom] = coords
+                    place = True
+            else: # Vertical
+                c_dep = random.randint(0, 8)
+                l_dep = random.randint(0, 9 - taille)
+                libre = True
                 for i in range(taille):
-                    grille[lig_depart + i][col_depart] = 1
-                    coords_bateau.append((col_depart, lig_depart + i))
-                
-                flotte[nom] = coords_bateau
-                place = True
+                    if grille[l_dep + i][c_dep] != 0: libre = False; break
+                if libre:
+                    coords = []
+                    for i in range(taille):
+                        grille[l_dep + i][c_dep] = 1
+                        coords.append((c_dep, l_dep + i))
+                    flotte[nom] = coords
+                    place = True
 
-print("La flotte est prête ! À l'attaque Capitaine !")
-print("Zone de tir : X entre -4 et 4, Y entre -4 et 4")
-print("-" * 30)
+# --- 2. FONCTIONS GRAPHIQUES ---
 
-# --- 3. BOUCLE DE JEU ---
-while True:
-    print(flotte)
+# Paramètres du repère
+ECHELLE = 40  # Nombre de pixels pour 1 unité
+CENTRE_X = 200 # Le 0 en X (milieu de 400)
+CENTRE_Y = 200 # Le 0 en Y (milieu de 400)
+
+def dessiner_point(x, y, couleur):
+    """ Dessine un petit rond sur le repère aux coordonnées x, y """
+    # Conversion Math -> Pixels écran
+    # Pour X : on ajoute au centre
+    px = CENTRE_X + (x * ECHELLE)
+    # Pour Y : on soustrait au centre (car en informatique Y descend, en math Y monte)
+    py = CENTRE_Y - (y * ECHELLE)
+    
+    rayon = 10
+    canvas.create_oval(px - rayon, py - rayon, px + rayon, py + rayon, fill=couleur, outline="black")
+
+def tirer():
     try:
-        # Demande des coordonnées
-        print("\nEntrez vos coordonnées de tir :")
-        x = int(input("X : "))
-        y = int(input("Y : "))
+        #print(flotte) # Pour debug
+        x_saisi = int(entree_x.get())
+        y_saisi = int(entree_y.get())
     except ValueError:
-        print("Erreur : Veuillez entrer un nombre entier relatif.")
-        continue
+        label_info.config(text="Erreur : Entrez des nombres entiers !", fg="orange")
+        return
 
-    # Vérification des limites (-4 à 4)
-    if x < -4 or x > 4 or y < -4 or y > 4:
-        print("Attention, la torpille est en dehors de la zone de tir !")
-        continue
+    if x_saisi < -4 or x_saisi > 4 or y_saisi < -4 or y_saisi > 4:
+        label_info.config(text="Hors zone ! (-4 à 4)", fg="orange")
+        return
 
-    # Conversion en indices de tableau (0 à 8)
-    # x = -4 -> col 0, x = 0 -> col 4, x = 4 -> col 8
-    colonne = x + 4
-    # y = 4 -> lig 0, y = 0 -> lig 4, y = -4 -> lig 8
-    ligne = 4 - y 
+    # Conversion indices
+    colonne = x_saisi + 4
+    ligne = 4 - y_saisi
+    
+    valeur = grille[ligne][colonne]
 
-    # --- 4. ANALYSE DU TIR ---
-    valeur_case = grille[ligne][colonne]
+    if valeur == 0: # EAU
+        grille[ligne][colonne] = 2
+        dessiner_point(x_saisi, y_saisi, "grey") # Point GRIS
+        label_info.config(text=f"Tir en ({x_saisi}, {y_saisi}) : PLOUF !", fg="black")
 
-    if valeur_case == 0:
-        print("Plouf ! C'est raté, dans l'eau.")
-        grille[ligne][colonne] = 2 # Marqué comme raté
-
-    elif valeur_case == 2 or valeur_case == 3:
-        print("Nous avons déjà tiré ici Capitaine, concentrez-vous !")
-
-    elif valeur_case == 1:
-        print("BOUM ! Touché !")
-        grille[ligne][colonne] = 3 # Marqué comme touché
-
-        # On cherche quel bateau a été touché pour le mettre à jour
-        # On parcourt le dictionnaire (nom du bateau, liste des coordonnées)
-        nom_bateau_coule = "" # Variable temporaire
+    elif valeur == 1: # BATEAU
+        grille[ligne][colonne] = 3
+        dessiner_point(x_saisi, y_saisi, "red") # Point ROUGE
         
+        # Vérification Coulé
+        nom_coule = ""
         for nom, coords in flotte.items():
             if (colonne, ligne) in coords:
-                coords.remove((colonne, ligne)) # On enlève cette partie du bateau
-                
-                # Si la liste est vide, le bateau est coulé
+                coords.remove((colonne, ligne))
                 if coords == []:
-                    print(f"⚓ INCROYABLE ! Vous avez coulé le {nom} !")
-                    nom_bateau_coule = nom # On note le nom pour le supprimer après
+                    nom_coule = nom
                 break
         
-        # Si un bateau a coulé, on le supprime du dictionnaire
-        if nom_bateau_coule != "":
-            del flotte[nom_bateau_coule]
+        if nom_coule:
+            del flotte[nom_coule]
+            label_info.config(text=f"BOUM ! Vous avez COULÉ le {nom_coule} !", fg="red")
+            if not flotte:
+                messagebox.showinfo("Victoire !", "Félicitations Capitaine ! Toute la flotte est coulée !")
+                fenetre.quit()
+        else:
+            label_info.config(text="BOUM ! Touché !", fg="red")
 
-        # Condition de VICTOIRE
-        if flotte == {}:
-            print("\n" + "="*40)
-            print("FÉLICITATIONS ! Toute la flotte ennemie est anéantie !")
-            print("="*40)
-            break # Fin du jeu
+    elif valeur >= 2:
+        label_info.config(text=f"Vous avez déjà visé le point ({x_saisi}, {y_saisi})", fg="blue")
+    
+    entree_x.delete(0, tk.END)
+    entree_y.delete(0, tk.END)
+
+# --- 3. INTERFACE ---
+
+init_jeu()
+
+fenetre = tk.Tk()
+fenetre.title("Bataille Navale - Repère Cartésien")
+
+# Cadre Gauche : Le Repère (Canvas)
+frame_graph = tk.Frame(fenetre, padx=10, pady=10)
+frame_graph.pack(side=tk.LEFT)
+
+canvas = tk.Canvas(frame_graph, width=400, height=400, bg="white")
+canvas.pack()
+
+# DESSIN DU REPÈRE
+# 1. La grille (papier millimétré)
+for i in range(-4, 5):
+    pos = i * ECHELLE
+    # Lignes verticales
+    canvas.create_line(CENTRE_X + pos, 0, CENTRE_X + pos, 400, fill="lightgrey")
+    # Lignes horizontales
+    canvas.create_line(0, CENTRE_Y + pos, 400, CENTRE_Y + pos, fill="lightgrey")
+
+# 2. Les Axes principaux (X et Y)
+canvas.create_line(CENTRE_X, 0, CENTRE_X, 400, width=2, arrow=tk.LAST) # Axe Y (Vertical)
+canvas.create_line(0, CENTRE_Y, 400, CENTRE_Y, width=2, arrow=tk.LAST) # Axe X (Horizontal)
+
+# 3. Les numéros sur les axes
+for i in range(-4, 5):
+    if i == 0: continue # On ne marque pas le 0 deux fois
+    px = CENTRE_X + (i * ECHELLE)
+    py = CENTRE_Y - (i * ECHELLE)
+    # Chiffres sur l'axe X
+    canvas.create_text(px, CENTRE_Y + 15, text=str(i), font=("Arial", 8))
+    # Chiffres sur l'axe Y
+    canvas.create_text(CENTRE_X - 15, py, text=str(i), font=("Arial", 8))
+
+canvas.create_text(380, CENTRE_Y - 15, text="X", font=("Arial", 10, "bold"))
+canvas.create_text(CENTRE_X + 15, 20, text="Y", font=("Arial", 10, "bold"))
+
+
+# Cadre Droit : Commandes
+frame_commandes = tk.Frame(fenetre, padx=20)
+frame_commandes.pack(side=tk.RIGHT)
+
+tk.Label(frame_commandes, text="Coordonnées", font=("Arial", 14, "bold")).pack(pady=10)
+
+# Champ X
+frame_x = tk.Frame(frame_commandes)
+frame_x.pack(pady=5)
+tk.Label(frame_x, text="X :", font=("Arial", 12)).pack(side=tk.LEFT)
+entree_x = tk.Entry(frame_x, width=5, font=("Arial", 12))
+entree_x.pack(side=tk.LEFT)
+
+# Champ Y
+frame_y = tk.Frame(frame_commandes)
+frame_y.pack(pady=5)
+tk.Label(frame_y, text="Y :", font=("Arial", 12)).pack(side=tk.LEFT)
+entree_y = tk.Entry(frame_y, width=5, font=("Arial", 12))
+entree_y.pack(side=tk.LEFT)
+
+btn_feu = tk.Button(frame_commandes, text="FEU !", font=("Arial", 12, "bold"), bg="red", fg="white", command=tirer)
+btn_feu.pack(pady=20, ipadx=10, ipady=5)
+
+label_info = tk.Label(frame_commandes, text="En attente de tir...", font=("Arial", 11), wraplength=150)
+label_info.pack(pady=10)
+
+fenetre.mainloop()
