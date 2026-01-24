@@ -56,15 +56,31 @@ CENTRE_X = 200 # Le 0 en X (milieu de 400)
 CENTRE_Y = 200 # Le 0 en Y (milieu de 400)
 
 def dessiner_point(x, y, couleur):
-    """ Dessine un petit rond sur le repère aux coordonnées x, y """
-    # Conversion Math -> Pixels écran
-    # Pour X : on ajoute au centre
+    """ Affiche le point et ses traits de construction (éphémères) """
+    
+    # 1. On efface les ANCIENNES traces (lignes pointillées)
+    # On supprime tout ce qui a le tag "trace" sur le canvas
+    canvas.delete("trace")
+
+    # 2. Calcul des coordonnées en pixels
     px = CENTRE_X + (x * ECHELLE)
-    # Pour Y : on soustrait au centre (car en informatique Y descend, en math Y monte)
     py = CENTRE_Y - (y * ECHELLE)
     
-    rayon = 10
-    canvas.create_oval(px - rayon, py - rayon, px + rayon, py + rayon, fill=couleur, outline="black")
+    # 3. Dessin des NOUVEAUX traits de construction
+    # On ajoute l'argument tags="trace" pour pouvoir les effacer au prochain tour
+    
+    # Trait vertical vers l'axe X
+    canvas.create_line(px, py, px, CENTRE_Y, fill=couleur, 
+                       dash=(4, 4), tags="trace")
+    
+    # Trait horizontal vers l'axe Y
+    canvas.create_line(px, py, CENTRE_X, py, fill=couleur, 
+                       dash=(4, 4), tags="trace")
+    
+    # 4. Dessin du point (Lui, il reste, donc pas de tag "trace")
+    rayon = 8
+    canvas.create_oval(px - rayon, py - rayon, px + rayon, py + rayon, 
+                       fill=couleur, outline="black")
 
 def tirer():
     try:
