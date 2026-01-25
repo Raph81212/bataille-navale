@@ -4,6 +4,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.0-blue)
 ![License](https://img.shields.io/badge/license-Copyleft-red)
+![Aperçu du jeu](screenshot.png)
 
 ## 🎮 Jouer en ligne (Recommandé)
 
