@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bataille Navale Relative</title>
+    <style>
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #333; margin-bottom: 5px; }
+        .subtitle { font-style: italic; color: #666; margin-bottom: 20px; }
+        
+        /* Conteneur principal : Graphique à gauche, Commandes à droite */
+        .game-container {
+            display: flex;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            gap: 30px;
+            flex-wrap: wrap; /* Pour s'adapter aux petits écrans */
+            justify-content: center;
+        }
+
+        /* La zone de dessin (Canvas) */
+        canvas {
+            background-color: white;
+            border: 1px solid #ccc;
+            cursor: crosshair;
+        }
+
+        /* La zone de commandes */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            min-width: 250px;
+        }
+
+        .targets { margin-bottom: 20px; }
+        .target-item { margin: 5px 0; color: #333; }
+        .sunk { text-decoration: line-through; color: grey; }
+
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+        }
+        .input-group label { width: 40px; font-weight: bold;}
+        .input-group input {
+            padding: 5px;
+            font-size: 1em;
+            width: 60px;
+            text-align: center;
+        }
+
+        button {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #b71c1c; }
+
+        #info-msg {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 40px;
+        }
+
+        .footer { margin-top: 30px; font-size: 0.8em; color: #999; }
+        a { color: #d32f2f; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Bataille Navale Relative</h1>
+    <div class="subtitle">Raphaël CHAILLIÉ</div>
+
+    <div class="game-container">
+        <div>
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="targets">
+                <strong>🎯 CIBLES :</strong>
+                <div id="list-ships">
+                    </div>
+            </div>
+
+            <h3>Coordonnées de tir</h3>
+            
+            <div class="input-group">
+                <label>x :</label>
+                <input type="number" id="inputX" min="-4" max="4">
+            </div>
+            <div class="input-group">
+                <label>y :</label>
+                <input type="number" id="inputY" min="-4" max="4">
+            </div>
+
+            <button onclick="tirer()">FEU !</button>
+            <div id="info-msg">En attente de tir...</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Projet Open Source - Licence Copyleft (ɔ)<br>
+        <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
+    </div>
+
+    <script>
+        // --- 1. INITIALISATION ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const ECHELLE = 40;
+        const CENTRE_X = 200;
+        const CENTRE_Y = 200;
+
+        let grille = [];
+        let flotte = {};
+        // Types de bateaux
+        const typesBateaux = [
+            {nom: "Porte-Avions", taille: 5},
+            {nom: "Croiseur", taille: 4},
+            {nom: "Contre-Torpilleur", taille: 3},
+            {nom: "Torpilleur", taille: 2}
+        ];
+
+        // Initialisation de la grille vide (9x9)
+        for(let i=0; i<9; i++) {
+            grille.push(new Array(9).fill(0));
+        }
+
+        // Placement aléatoire des bateaux
+        typesBateaux.forEach(bateau => {
+            let place = false;
+            while(!place) {
+                let direction = Math.floor(Math.random() * 2); // 0 horiz, 1 vert
+                let coords = [];
+                let libre = true;
+
+                if(direction === 0) { // Horizontal
+                    let c_dep = Math.floor(Math.random() * (9 - bateau.taille));
+                    let l_dep = Math.floor(Math.random() * 9);
+                    for(let k=0; k<bateau.taille; k++) {
+                        if(grille[l_dep][c_dep + k] !== 0) libre = false;
+                    }
+                    if(libre) {
+                        for(let k=0; k<bateau.taille; k++) {
+                            grille[l_dep][c_dep + k] = 1;
+                            coords.push(`${c_dep + k},${l_dep}`); // On stocke "x,y" en string
+                        }
+                        flotte[bateau.nom] = coords;
+                        place = true;
+                    }
+                } else { // Vertical
+                    let c_dep = Math.floor(Math.random() * 9);
+                    let l_dep = Math.floor(Math.random() * (9 - bateau.taille));
+                    for(let k=0; k<bateau.taille; k++) {
+                        if(grille[l_dep + k][c_dep] !== 0) libre = false;
+                    }
+                    if(libre) {
+                        for(let k=0; k<bateau.taille; k++) {
+                            grille[l_dep + k][c_dep] = 1;
+                            coords.push(`${c_dep},${l_dep + k}`);
+                        }
+                        flotte[bateau.nom] = coords;
+                        place = true;
+                    }
+                }
+            }
+        });
+
+        // Affichage de la liste des bateaux dans le HTML
+        const listContainer = document.getElementById('list-ships');
+        typesBateaux.forEach(b => {
+            let div = document.createElement('div');
+            div.className = 'target-item';
+            div.id = 'ship-' + b.nom.replace(' ', '-'); // ID unique sans espace
+            div.innerText = `• ${b.nom} (${b.taille})`;
+            listContainer.appendChild(div);
+        });
+
+        // --- 2. FONCTIONS DE DESSIN ---
+
+        function dessinerRepere() {
+            // Fond blanc
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, 400, 400);
+
+            // Grille
+            ctx.strokeStyle = "lightgrey";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let i = -4; i <= 4; i++) {
+                let pos = i * ECHELLE;
+                // Verticales
+                ctx.moveTo(CENTRE_X + pos, 0);
+                ctx.lineTo(CENTRE_X + pos, 400);
+                // Horizontales
+                ctx.moveTo(0, CENTRE_Y + pos);
+                ctx.lineTo(400, CENTRE_Y + pos);
+            }
+            ctx.stroke();
+
+            // Axes
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // Y
+            ctx.moveTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X, 400);
+            // X
+            ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y);
+            ctx.stroke();
+
+            // Flèches (simplifiées)
+            ctx.font = "bold 12px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("y", CENTRE_X + 10, 15);
+            ctx.fillText("x", 385, CENTRE_Y - 10);
+
+            // Chiffres
+            ctx.font = "10px Arial";
+            for(let i = -4; i <= 4; i++) {
+                if(i === 0) {
+                    ctx.fillText("0", CENTRE_X - 10, CENTRE_Y + 12);
+                    continue;
+                }
+                let px = CENTRE_X + (i * ECHELLE);
+                let py = CENTRE_Y - (i * ECHELLE);
+                ctx.fillText(i, px - 3, CENTRE_Y + 15); // Axe X
+                ctx.fillText(i, CENTRE_X - 15, py + 3); // Axe Y
+            }
+        }
+
+        // On garde en mémoire les tirs précédents pour les redessiner
+        let historiqueTirs = []; 
+
+        function redessinerTout() {
+            ctx.clearRect(0, 0, 400, 400);
+            dessinerRepere();
+            
+            // Redessiner tous les points
+            historiqueTirs.forEach(tir => {
+                let px = CENTRE_X + (tir.x * ECHELLE);
+                let py = CENTRE_Y - (tir.y * ECHELLE);
+                
+                // Si c'est le dernier tir, on met les pointillés
+                if(tir === historiqueTirs[historiqueTirs.length - 1]) {
+                    ctx.beginPath();
+                    ctx.setLineDash([4, 4]); // Pointillés
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "red";
+                    // Vers axe X
+                    ctx.moveTo(px, py); ctx.lineTo(px, CENTRE_Y);
+                    // Vers axe Y
+                    ctx.moveTo(px, py); ctx.lineTo(CENTRE_X, py);
+                    ctx.stroke();
+                    ctx.setLineDash([]); // Reset
+                }
+
+                // Le point
+                ctx.beginPath();
+                ctx.arc(px, py, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = tir.couleur;
+                ctx.fill();
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+        }
+
+        // --- 3. LOGIQUE DE JEU ---
+
+        function tirer() {
+            let info = document.getElementById('info-msg');
+            let inputX = document.getElementById('inputX');
+            let inputY = document.getElementById('inputY');
+
+            let x = parseInt(inputX.value);
+            let y = parseInt(inputY.value);
+
+            if(isNaN(x) || isNaN(y)) {
+                info.style.color = "orange";
+                info.innerText = "Erreur : Entrez des nombres !";
+                return;
+            }
+            if(x < -4 || x > 4 || y < -4 || y > 4) {
+                info.style.color = "orange";
+                info.innerText = "Hors zone ! (-4 à 4)";
+                return;
+            }
+
+            // Conversion coordonnées -> indices tableau
+            let col = x + 4;
+            let lig = 4 - y;
+            let val = grille[lig][col];
+
+            if(val >= 2) {
+                info.style.color = "blue";
+                info.innerText = `Déjà visé (${x}, ${y})`;
+                return;
+            }
+
+            if(val === 0) { // EAU
+                grille[lig][col] = 2;
+                historiqueTirs.push({x: x, y: y, couleur: "grey"});
+                info.style.color = "black";
+                info.innerText = `Tir en (${x}, ${y}) : PLOUF !`;
+            } 
+            else if(val === 1) { // TOUCHÉ
+                grille[lig][col] = 3;
+                historiqueTirs.push({x: x, y: y, couleur: "red"});
+                
+                // Vérif Coulé
+                let nomCoule = "";
+                let cleASupprimer = "";
+
+                // On parcourt la flotte
+                for (const [nom, coords] of Object.entries(flotte)) {
+                    // On cherche si le point actuel est dans ce bateau
+                    // Note: coords est un tableau de strings "col,lig"
+                    let index = coords.indexOf(`${col},${lig}`);
+                    if (index > -1) {
+                        coords.splice(index, 1); // On retire la coordonnée touchée
+                        if (coords.length === 0) {
+                            nomCoule = nom;
+                            cleASupprimer = nom;
+                        }
+                        break;
+                    }
+                }
+
+                if(nomCoule) {
+                    delete flotte[cleASupprimer];
+                    info.style.color = "red";
+                    info.innerText = `BOUM ! ${nomCoule} COULÉ !`;
+                    
+                    // Rayer le nom
+                    let idNom = 'ship-' + nomCoule.replace(' ', '-');
+                    document.getElementById(idNom).classList.add('sunk');
+
+                    if(Object.keys(flotte).length === 0) {
+                        setTimeout(() => alert("VICTOIRE ! Toute la flotte est coulée !"), 100);
+                    }
+
+                } else {
+                    info.style.color = "red";
+                    info.innerText = "BOUM ! Touché !";
+                }
+            }
+
+            redessinerTout();
+            inputX.value = "";
+            inputY.value = "";
+            inputX.focus();
+        }
+
+        // Ajout touche Entrée pour valider
+        document.addEventListener('keydown', function(event) {
+            if(event.key === "Enter") {
+                tirer();
+            }
+        });
+
+        // Premier dessin
+        dessinerRepere();
+
+    </script>
+</body>
+</html>
