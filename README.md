@@ -10,7 +10,7 @@
 
 Pas besoin d'installation ! Le jeu est disponible directement dans votre navigateur (PC, Tablette, Mobile).
 
-👉 **[CLIQUEZ ICI POUR JOUER](https://raph81212.github.io/bataille-navalle/)**
+👉 **[CLIQUEZ ICI POUR JOUER](https://raph81212.github.io/bataille-navale/)**
 
 ---
 
@@ -45,7 +45,7 @@ Pré-requis : Avoir Python 3 installé.
 
 1.  Clonez le dépôt :
     ```bash
-    git clone [https://github.com/Raph81212/bataille-navalle.git](https://github.com/Raph81212/bataille-navalle.git)
+    git clone [https://github.com/Raph81212/bataille-navale.git](https://github.com/Raph81212/bataille-navale.git)
     ```
 2.  Lancez le jeu :
     ```bash
