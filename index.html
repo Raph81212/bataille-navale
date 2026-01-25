@@ -18,10 +18,9 @@
         h1 { color: #333; margin-bottom: 5px; font-size: 1.5em; text-align: center; }
         .subtitle { font-style: italic; color: #666; margin-bottom: 15px; font-size: 0.9em; }
         
-        /* --- CONTENEUR PRINCIPAL --- */
         .game-container {
             display: flex;
-            flex-direction: row; /* Par défaut : ligne (Gauche -> Droite) */
+            flex-direction: row; 
             background: white;
             padding: 20px;
             border-radius: 15px;
@@ -32,7 +31,6 @@
             max-width: 100%;
         }
 
-        /* --- ZONE GRAPHIQUE --- */
         .canvas-area {
             display: flex;
             justify-content: center;
@@ -47,7 +45,6 @@
             height: auto;
         }
 
-        /* --- ZONE COMMANDES --- */
         .controls {
             display: flex;
             flex-direction: column;
@@ -63,33 +60,60 @@
         .target-item { margin: 5px 0; color: #333; font-size: 0.95em; }
         .sunk { text-decoration: line-through; color: grey; }
 
+        /* NOUVEAU STYLE POUR LES CONTROLEURS */
         .input-group {
             margin: 15px 0;
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Aligné à gauche sur PC */
-            font-size: 1.2em;
+            justify-content: flex-start; /* Aligné gauche sur PC */
+            gap: 10px; /* Espace entre les éléments */
         }
-        .input-group label { width: 40px; font-weight: bold;}
+        
+        .input-group label { 
+            font-weight: bold; 
+            font-size: 1.2em; 
+            width: 30px;
+        }
         
         .input-group input {
             padding: 8px;
-            font-size: 1.1em;
-            width: 70px;
+            font-size: 1.2em;
+            width: 50px;
             text-align: center;
             border: 2px solid #ddd;
             border-radius: 5px;
+            font-weight: bold;
+            /* On cache les flèches natives car on a les nôtres */
+            -moz-appearance: textfield;
+        }
+        /* Cacher flèches natives Webkit */
+        .input-group input::-webkit-outer-spin-button,
+        .input-group input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
-        /* FORCER L'AFFICHAGE DES FLÈCHES DANS LES INPUTS (Mobile & Webkit) */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button {  
-            -webkit-appearance: inner-spin-button !important;
-            opacity: 1 !important;
-            height: 30px; /* Rendre les flèches plus hautes pour le tactile */
+        /* Boutons + et - */
+        .btn-nav {
+            background-color: #e0e0e0;
+            color: #333;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0; /* Override du margin global des buttons */
+            padding: 0;
         }
+        .btn-nav:hover { background-color: #ccc; }
+        .btn-nav:active { background-color: #bbb; }
 
-        button {
+        /* Gros bouton FEU */
+        .btn-feu {
             background-color: #d32f2f;
             color: white;
             border: none;
@@ -98,11 +122,11 @@
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 20px;
             width: 100%;
             transition: background 0.3s;
         }
-        button:hover { background-color: #b71c1c; }
+        .btn-feu:hover { background-color: #b71c1c; }
 
         #info-msg {
             margin-top: 20px;
@@ -117,10 +141,9 @@
         .footer { margin-top: 30px; font-size: 0.8em; color: #999; text-align: center;}
         a { color: #d32f2f; text-decoration: none; }
 
-        /* --- MOBILE (Ecrans < 768px) --- */
         @media (max-width: 768px) {
             .game-container {
-                flex-direction: column; /* On passe en colonne */
+                flex-direction: column;
                 align-items: center;
                 padding: 10px;
                 gap: 15px;
@@ -128,17 +151,14 @@
 
             .controls {
                 width: 100%;
-                display: flex;
-                flex-direction: column;
             }
 
-            /* REORGANISATION MOBILE : Inputs en haut, Liste en bas */
             .targets { order: 2; margin-top: 20px; border-top: 2px dashed #eee; }
-            h3, .input-group, button, #info-msg { order: 1; }
+            h3, .input-group, .btn-feu, #info-msg { order: 1; }
 
-            .input-group { justify-content: center; } /* Centrer les inputs sur mobile */
+            /* Centrer les inputs sur mobile */
+            .input-group { justify-content: center; } 
 
-            /* Canvas un peu plus petit sur mobile */
             canvas {
                 width: 320px;
                 height: 320px;
@@ -160,22 +180,26 @@
             
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
-                <div id="list-ships">
-                    </div>
+                <div id="list-ships"></div>
             </div>
 
             <h3>Coordonnées de tir</h3>
             
             <div class="input-group">
                 <label>x :</label>
-                <input type="number" id="inputX" min="-4" max="4" step="1">
-            </div>
-            <div class="input-group">
-                <label>y :</label>
-                <input type="number" id="inputY" min="-4" max="4" step="1">
+                <button class="btn-nav" onclick="changerValeur('inputX', -1)">-</button>
+                <input type="number" id="inputX" value="0" min="-4" max="4" readonly>
+                <button class="btn-nav" onclick="changerValeur('inputX', 1)">+</button>
             </div>
 
-            <button onclick="tirer()">FEU !</button>
+            <div class="input-group">
+                <label>y :</label>
+                <button class="btn-nav" onclick="changerValeur('inputY', -1)">-</button>
+                <input type="number" id="inputY" value="0" min="-4" max="4" readonly>
+                <button class="btn-nav" onclick="changerValeur('inputY', 1)">+</button>
+            </div>
+
+            <button class="btn-feu" onclick="tirer()">FEU !</button>
             <div id="info-msg">En attente de tir...</div>
         </div>
     </div>
@@ -247,7 +271,6 @@
             }
         });
 
-        // Affichage Liste
         const listContainer = document.getElementById('list-ships');
         typesBateaux.forEach(b => {
             let div = document.createElement('div');
@@ -257,13 +280,24 @@
             listContainer.appendChild(div);
         });
 
-        // --- 2. DESSIN ---
+        // --- NOUVELLE FONCTION POUR LES BOUTONS +/- ---
+        function changerValeur(idInput, changement) {
+            let input = document.getElementById(idInput);
+            let valeurActuelle = parseInt(input.value) || 0;
+            let nouvelleValeur = valeurActuelle + changement;
 
+            // Bloquer entre -4 et 4
+            if (nouvelleValeur >= -4 && nouvelleValeur <= 4) {
+                input.value = nouvelleValeur;
+            }
+        }
+
+        // --- 2. DESSIN ---
         function dessinerRepere() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 400, 400);
 
-            // Grille légère
+            // Grille
             ctx.strokeStyle = "lightgrey";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -274,36 +308,26 @@
             }
             ctx.stroke();
 
-            // AXES PRINCIPAUX
+            // AXES
             ctx.strokeStyle = "black";
-            ctx.fillStyle = "black"; // Pour les pointes de flèches
+            ctx.fillStyle = "black";
             ctx.lineWidth = 2;
             ctx.beginPath();
             
-            // Axe Y (Vertical) - Flèche vers le HAUT
-            ctx.moveTo(CENTRE_X, 400); 
-            ctx.lineTo(CENTRE_X, 0); // Ligne
-            // Pointe de flèche Y
-            ctx.moveTo(CENTRE_X - 5, 10); 
-            ctx.lineTo(CENTRE_X, 0); 
-            ctx.lineTo(CENTRE_X + 5, 10);
+            // Axe Y
+            ctx.moveTo(CENTRE_X, 400); ctx.lineTo(CENTRE_X, 0); 
+            ctx.moveTo(CENTRE_X - 5, 10); ctx.lineTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X + 5, 10);
 
-            // Axe X (Horizontal) - Flèche vers la DROITE
-            ctx.moveTo(0, CENTRE_Y); 
-            ctx.lineTo(400, CENTRE_Y); // Ligne
-            // Pointe de flèche X
-            ctx.moveTo(390, CENTRE_Y - 5); 
-            ctx.lineTo(400, CENTRE_Y); 
-            ctx.lineTo(390, CENTRE_Y + 5);
+            // Axe X
+            ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y); 
+            ctx.moveTo(390, CENTRE_Y - 5); ctx.lineTo(400, CENTRE_Y); ctx.lineTo(390, CENTRE_Y + 5);
             
             ctx.stroke();
 
-            // Labels x et y
             ctx.font = "bold 14px Arial";
             ctx.fillText("y", CENTRE_X + 10, 15);
             ctx.fillText("x", 385, CENTRE_Y - 15);
 
-            // Chiffres
             ctx.font = "11px Arial";
             for(let i = -4; i <= 4; i++) {
                 if(i === 0) {
@@ -312,8 +336,8 @@
                 }
                 let px = CENTRE_X + (i * ECHELLE);
                 let py = CENTRE_Y - (i * ECHELLE);
-                ctx.fillText(i, px - 3, CENTRE_Y + 15); // Axe X
-                ctx.fillText(i, CENTRE_X - 18, py + 4); // Axe Y
+                ctx.fillText(i, px - 3, CENTRE_Y + 15);
+                ctx.fillText(i, CENTRE_X - 18, py + 4);
             }
         }
 
@@ -349,7 +373,6 @@
         }
 
         // --- 3. JEU ---
-
         function tirer() {
             let info = document.getElementById('info-msg');
             let inputX = document.getElementById('inputX');
@@ -420,16 +443,7 @@
             }
 
             redessinerTout();
-            // On ne vide pas les inputs pour permettre de tirer rapidement à côté si besoin
-            // inputX.value = ""; inputY.value = ""; 
-            inputX.focus();
         }
-
-        document.addEventListener('keydown', function(event) {
-            if(event.key === "Enter") {
-                tirer();
-            }
-        });
 
         dessinerRepere();
 
