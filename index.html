@@ -13,28 +13,31 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 10px; /* Marges réduites pour mobile */
         }
-        h1 { color: #333; margin-bottom: 5px; }
-        .subtitle { font-style: italic; color: #666; margin-bottom: 20px; }
+        h1 { color: #333; margin-bottom: 5px; font-size: 1.5em; text-align: center; }
+        .subtitle { font-style: italic; color: #666; margin-bottom: 15px; font-size: 0.9em; }
         
-        /* Conteneur principal : Graphique à gauche, Commandes à droite */
+        /* Conteneur principal */
         .game-container {
             display: flex;
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            gap: 30px;
-            flex-wrap: wrap; /* Pour s'adapter aux petits écrans */
+            gap: 20px;
+            flex-wrap: wrap; 
             justify-content: center;
+            max-width: 100%;
         }
 
-        /* La zone de dessin (Canvas) */
+        /* Canvas responsive */
         canvas {
             background-color: white;
             border: 1px solid #ccc;
             cursor: crosshair;
+            max-width: 100%; /* S'adapte à la largeur de l'écran */
+            height: auto;
         }
 
         /* La zone de commandes */
@@ -42,36 +45,46 @@
             display: flex;
             flex-direction: column;
             min-width: 250px;
+            width: 100%; /* Prend toute la largeur sur mobile */
         }
 
-        .targets { margin-bottom: 20px; }
-        .target-item { margin: 5px 0; color: #333; }
+        .targets { 
+            margin-bottom: 20px; 
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .target-item { margin: 5px 0; color: #333; font-size: 0.9em; }
         .sunk { text-decoration: line-through; color: grey; }
 
         .input-group {
             margin: 10px 0;
             display: flex;
             align-items: center;
+            justify-content: center; /* Centrer les inputs */
             font-size: 1.2em;
         }
         .input-group label { width: 40px; font-weight: bold;}
         .input-group input {
-            padding: 5px;
+            padding: 8px;
             font-size: 1em;
-            width: 60px;
+            width: 80px; /* Plus large pour les gros doigts */
             text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
         }
 
         button {
             background-color: #d32f2f;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 15px 20px; /* Bouton plus gros pour le tactile */
             font-size: 1.2em;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
+            width: 100%; /* Bouton pleine largeur */
             transition: background 0.3s;
         }
         button:hover { background-color: #b71c1c; }
@@ -80,10 +93,38 @@
             margin-top: 15px;
             font-weight: bold;
             min-height: 40px;
+            text-align: center;
         }
 
-        .footer { margin-top: 30px; font-size: 0.8em; color: #999; }
+        .footer { margin-top: 30px; font-size: 0.8em; color: #999; text-align: center;}
         a { color: #d32f2f; text-decoration: none; }
+
+        /* --- C'EST ICI QUE LA MAGIE OPÈRE POUR LE MOBILE --- */
+        @media (max-width: 768px) {
+            /* On réorganise l'ordre d'affichage dans .controls */
+            .controls {
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* On force la liste des cibles à aller tout en bas (ordre 2) */
+            .targets {
+                order: 2; 
+                margin-top: 20px;
+                border-top: 2px dashed #eee; /* Petite séparation visuelle */
+            }
+
+            /* On force le titre "Coordonnées" et les inputs à rester en haut (ordre 1) */
+            h3, .input-group, button, #info-msg {
+                order: 1;
+            }
+            
+            /* Ajustement canvas pour petits écrans */
+            canvas {
+                width: 300px;
+                height: 300px;
+            }
+        }
     </style>
 </head>
 <body>
