@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
-import webbrowser # Import nécessaire pour ouvrir le lien internet
+import webbrowser
 
 # ==============================================================================
 # 1. VARIABLES GLOBALES ET LOGIQUE DU JEU
@@ -9,12 +9,12 @@ import webbrowser # Import nécessaire pour ouvrir le lien internet
 
 grille = []
 flotte = {}
-# On définit ces variables graphiques en global pour qu'elles soient accessibles
 canvas = None
 entree_x = None
 entree_y = None
 label_info = None
-fenetre_principale = None 
+fenetre_principale = None
+labels_bateaux = {} 
 
 def init_jeu():
     global grille, flotte
@@ -71,8 +71,8 @@ def dessiner_point(x, y, couleur):
     px = CENTRE_X + (x * ECHELLE)
     py = CENTRE_Y - (y * ECHELLE)
     
-    canvas.create_line(px, py, px, CENTRE_Y, fill=couleur, dash=(4, 4), tags="trace")
-    canvas.create_line(px, py, CENTRE_X, py, fill=couleur, dash=(4, 4), tags="trace")
+    canvas.create_line(px, py, px, CENTRE_Y, fill="red", width=2, dash=(4, 4), tags="trace")
+    canvas.create_line(px, py, CENTRE_X, py, fill="red", width=2, dash=(4, 4), tags="trace")
     
     rayon = 8
     canvas.create_oval(px - rayon, py - rayon, px + rayon, py + rayon, 
@@ -114,6 +114,11 @@ def tirer():
         if nom_coule:
             del flotte[nom_coule]
             label_info.config(text=f"BOUM ! Vous avez COULÉ le {nom_coule} !", fg="red")
+            
+            # On raye le nom du bateau
+            if nom_coule in labels_bateaux:
+                labels_bateaux[nom_coule].config(fg="grey", font=("Arial", 10, "overstrike"))
+            
             if not flotte:
                 messagebox.showinfo("Victoire !", "Félicitations Capitaine ! Toute la flotte est coulée !")
                 fenetre_principale.quit()
@@ -131,16 +136,15 @@ def tirer():
 # ==============================================================================
 
 def ouvrir_lien(event):
-    """ Fonction appelée lors du clic sur le lien GitHub """
     webbrowser.open("https://github.com/Raph81212/bataille-navalle")
 
 def lancer_le_jeu(frame_menu_a_detruire):
     frame_menu_a_detruire.destroy()
     fenetre_principale.configure(bg="#f0f0f0")
 
-    global canvas, entree_x, entree_y, label_info
+    global canvas, entree_x, entree_y, label_info, labels_bateaux
 
-    # Cadre Gauche : Le Repère
+    # --- Cadre Gauche : Le Repère ---
     frame_graph = tk.Frame(fenetre_principale, padx=10, pady=10)
     frame_graph.pack(side=tk.LEFT)
 
@@ -158,34 +162,56 @@ def lancer_le_jeu(frame_menu_a_detruire):
 
     for i in range(-4, 5):
         if i == 0: 
-            canvas.create_text(CENTRE_X - 10, CENTRE_Y + 12, text="0", font=("Arial", 8, "bold"))
+            # MODIFICATION : Retrait de "bold" pour le 0
+            canvas.create_text(CENTRE_X - 10, CENTRE_Y + 12, text="0", font=("Arial", 8))
             continue 
         px = CENTRE_X + (i * ECHELLE)
         py = CENTRE_Y - (i * ECHELLE)
+        # MODIFICATION : Retrait de "bold" pour les chiffres des axes
         canvas.create_text(px, CENTRE_Y + 15, text=str(i), font=("Arial", 8))
         canvas.create_text(CENTRE_X - 15, py, text=str(i), font=("Arial", 8))
 
-    canvas.create_text(380, CENTRE_Y - 15, text="X", font=("Arial", 10, "bold"))
-    canvas.create_text(CENTRE_X + 15, 20, text="Y", font=("Arial", 10, "bold"))
+    # Les noms des axes x et y restent en gras pour la lisibilité
+    canvas.create_text(380, CENTRE_Y - 15, text="x", font=("Arial", 12, "bold"))
+    canvas.create_text(CENTRE_X + 15, 20, text="y", font=("Arial", 12, "bold"))
 
-    # Cadre Droit : Commandes
+    # --- Cadre Droit : Commandes ---
     frame_commandes = tk.Frame(fenetre_principale, padx=20)
     frame_commandes.pack(side=tk.RIGHT)
 
-    tk.Label(frame_commandes, text="Coordonnées", font=("Arial", 14, "bold")).pack(pady=10)
+    tk.Label(frame_commandes, text="🎯 CIBLES :", font=("Arial", 10, "bold"), 
+             bg="#f0f0f0").pack(pady=(0, 5), anchor="w")
 
+    liste_affichage = [("Porte-Avions", 5), ("Croiseur", 4), 
+                       ("Contre-Torpilleur", 3), ("Torpilleur", 2)]
+    
+    labels_bateaux = {} 
+    
+    for nom, taille in liste_affichage:
+        lbl = tk.Label(frame_commandes, text=f"• {nom} ({taille})", 
+                       font=("Arial", 10), bg="#f0f0f0", fg="#333333")
+        lbl.pack(anchor="w")
+        labels_bateaux[nom] = lbl
+
+    tk.Label(frame_commandes, text="", bg="#f0f0f0").pack(pady=5)
+
+    tk.Label(frame_commandes, text="Coordonnées de tir", font=("Arial", 14, "bold")).pack(pady=10)
+
+    # Saisie X
     frame_x = tk.Frame(frame_commandes)
     frame_x.pack(pady=5)
-    tk.Label(frame_x, text="X :", font=("Arial", 12)).pack(side=tk.LEFT)
+    tk.Label(frame_x, text="x :", font=("Arial", 12)).pack(side=tk.LEFT)
     entree_x = tk.Entry(frame_x, width=5, font=("Arial", 12))
     entree_x.pack(side=tk.LEFT)
 
+    # Saisie Y
     frame_y = tk.Frame(frame_commandes)
     frame_y.pack(pady=5)
-    tk.Label(frame_y, text="Y :", font=("Arial", 12)).pack(side=tk.LEFT)
+    tk.Label(frame_y, text="y :", font=("Arial", 12)).pack(side=tk.LEFT)
     entree_y = tk.Entry(frame_y, width=5, font=("Arial", 12))
     entree_y.pack(side=tk.LEFT)
 
+    # Bouton FEU
     btn_feu = tk.Button(frame_commandes, text="FEU !", font=("Arial", 12, "bold"), 
                         bg="#d32f2f", fg="white", activebackground="#b71c1c", cursor="hand2",
                         command=tirer, relief=tk.FLAT, borderwidth=0)
@@ -201,9 +227,9 @@ def afficher_menu():
 
     # 1. Le Titre
     tk.Label(frame_menu, text="Bataille Navale Relative", font=("Helvetica", 26, "bold"), 
-             bg="white", fg="#333333").pack(pady=(60, 10))
+             bg="white", fg="#333333").pack(pady=(50, 10))
 
-    # 2. Le Nom (Sans "Par")
+    # 2. Le Nom
     tk.Label(frame_menu, text="Raphaël CHAILLIÉ", font=("Helvetica", 14, "italic"), 
              bg="white", fg="#666666").pack(pady=(0, 20))
 
@@ -212,15 +238,16 @@ def afficher_menu():
         "Bienvenue Capitaine !\n\n"
         "La flotte ennemie est cachée dans le brouillard.\n"
         "Votre mission est de la détruire en utilisant le repère cartésien.\n\n"
-        "Entrez les coordonnées X (abscisse) et Y (ordonnée)\n"
+        "Entrez les coordonnées x (abscisse) et y (ordonnée)\n"
         "pour lancer vos torpilles."
     )
+    
     tk.Label(frame_menu, text=description, font=("Helvetica", 12), bg="white", 
-             justify="center", wraplength=500).pack(pady=20)
+             justify="center", wraplength=550).pack(pady=20)
 
-    # 4. Le Bouton JOUER (ROUGE)
+    # 4. Le Bouton JOUER
     btn_jouer = tk.Button(frame_menu, text="JOUER", font=("Helvetica", 16, "bold"),
-                          bg="#d32f2f", fg="white", activebackground="#b71c1c", # ROUGE
+                          bg="#d32f2f", fg="white", activebackground="#b71c1c",
                           relief=tk.FLAT, borderwidth=0, padx=30, pady=10, cursor="hand2",
                           command=lambda: lancer_le_jeu(frame_menu))
     btn_jouer.pack(pady=30)
@@ -229,7 +256,6 @@ def afficher_menu():
     lien_github = tk.Label(frame_menu, text="https://github.com/Raph81212/bataille-navalle", 
                            font=("Helvetica", 10, "underline"), bg="white", fg="blue", cursor="hand2")
     lien_github.pack(pady=5)
-    # On "lie" (bind) le clic gauche de la souris à la fonction ouvrir_lien
     lien_github.bind("<Button-1>", ouvrir_lien)
 
     # 6. La Licence
@@ -243,6 +269,6 @@ def afficher_menu():
 init_jeu()
 fenetre_principale = tk.Tk()
 fenetre_principale.title("Bataille Navale Relative")
-fenetre_principale.geometry("650x600") # Un peu plus haut pour faire tenir le lien
+fenetre_principale.geometry("650x650") 
 afficher_menu()
 fenetre_principale.mainloop()
