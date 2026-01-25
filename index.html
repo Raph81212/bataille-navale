@@ -15,8 +15,14 @@
             margin: 0;
             padding: 10px;
         }
-        h1 { color: #333; margin-bottom: 5px; font-size: 1.5em; text-align: center; }
-        .subtitle { font-style: italic; color: #666; margin-bottom: 15px; font-size: 0.9em; }
+        
+        /* Titre un peu plus grand et avec plus de marge en bas maintenant qu'il est seul */
+        h1 { 
+            color: #333; 
+            margin-bottom: 20px; 
+            font-size: 1.8em; 
+            text-align: center; 
+        }
         
         .game-container {
             display: flex;
@@ -60,13 +66,13 @@
         .target-item { margin: 5px 0; color: #333; font-size: 0.95em; }
         .sunk { text-decoration: line-through; color: grey; }
 
-        /* NOUVEAU STYLE POUR LES CONTROLEURS */
+        /* CONTROLES */
         .input-group {
             margin: 15px 0;
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Aligné gauche sur PC */
-            gap: 10px; /* Espace entre les éléments */
+            justify-content: flex-start; 
+            gap: 10px; 
         }
         
         .input-group label { 
@@ -83,10 +89,8 @@
             border: 2px solid #ddd;
             border-radius: 5px;
             font-weight: bold;
-            /* On cache les flèches natives car on a les nôtres */
             -moz-appearance: textfield;
         }
-        /* Cacher flèches natives Webkit */
         .input-group input::-webkit-outer-spin-button,
         .input-group input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -106,13 +110,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0; /* Override du margin global des buttons */
+            margin: 0;
             padding: 0;
         }
         .btn-nav:hover { background-color: #ccc; }
         .btn-nav:active { background-color: #bbb; }
 
-        /* Gros bouton FEU */
         .btn-feu {
             background-color: #d32f2f;
             color: white;
@@ -138,7 +141,18 @@
             border-radius: 5px;
         }
 
-        .footer { margin-top: 30px; font-size: 0.8em; color: #999; text-align: center;}
+        .footer { 
+            margin-top: 30px; 
+            font-size: 0.9em; 
+            color: #666; 
+            text-align: center;
+            line-height: 1.6;
+        }
+        .author-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
         a { color: #d32f2f; text-decoration: none; }
 
         @media (max-width: 768px) {
@@ -156,7 +170,6 @@
             .targets { order: 2; margin-top: 20px; border-top: 2px dashed #eee; }
             h3, .input-group, .btn-feu, #info-msg { order: 1; }
 
-            /* Centrer les inputs sur mobile */
             .input-group { justify-content: center; } 
 
             canvas {
@@ -169,8 +182,6 @@
 <body>
 
     <h1>Bataille Navale Relative</h1>
-    <div class="subtitle">Raphaël CHAILLIÉ</div>
-
     <div class="game-container">
         <div class="canvas-area">
             <canvas id="gameCanvas" width="400" height="400"></canvas>
@@ -205,6 +216,7 @@
     </div>
 
     <div class="footer">
+        <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
         <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
     </div>
@@ -280,13 +292,12 @@
             listContainer.appendChild(div);
         });
 
-        // --- NOUVELLE FONCTION POUR LES BOUTONS +/- ---
+        // --- FONCTIONS ---
         function changerValeur(idInput, changement) {
             let input = document.getElementById(idInput);
             let valeurActuelle = parseInt(input.value) || 0;
             let nouvelleValeur = valeurActuelle + changement;
 
-            // Bloquer entre -4 et 4
             if (nouvelleValeur >= -4 && nouvelleValeur <= 4) {
                 input.value = nouvelleValeur;
             }
