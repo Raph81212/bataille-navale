@@ -13,116 +13,135 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 10px; /* Marges réduites pour mobile */
+            padding: 10px;
         }
         h1 { color: #333; margin-bottom: 5px; font-size: 1.5em; text-align: center; }
         .subtitle { font-style: italic; color: #666; margin-bottom: 15px; font-size: 0.9em; }
         
-        /* Conteneur principal */
+        /* --- CONTENEUR PRINCIPAL --- */
         .game-container {
             display: flex;
+            flex-direction: row; /* Par défaut : ligne (Gauche -> Droite) */
             background: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            gap: 20px;
-            flex-wrap: wrap; 
+            gap: 30px;
             justify-content: center;
+            align-items: flex-start;
             max-width: 100%;
         }
 
-        /* Canvas responsive */
+        /* --- ZONE GRAPHIQUE --- */
+        .canvas-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         canvas {
             background-color: white;
             border: 1px solid #ccc;
             cursor: crosshair;
-            max-width: 100%; /* S'adapte à la largeur de l'écran */
+            max-width: 100%;
             height: auto;
         }
 
-        /* La zone de commandes */
+        /* --- ZONE COMMANDES --- */
         .controls {
             display: flex;
             flex-direction: column;
             min-width: 250px;
-            width: 100%; /* Prend toute la largeur sur mobile */
         }
 
         .targets { 
             margin-bottom: 20px; 
             background: #f9f9f9;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
         }
-        .target-item { margin: 5px 0; color: #333; font-size: 0.9em; }
+        .target-item { margin: 5px 0; color: #333; font-size: 0.95em; }
         .sunk { text-decoration: line-through; color: grey; }
 
         .input-group {
-            margin: 10px 0;
+            margin: 15px 0;
             display: flex;
             align-items: center;
-            justify-content: center; /* Centrer les inputs */
+            justify-content: flex-start; /* Aligné à gauche sur PC */
             font-size: 1.2em;
         }
         .input-group label { width: 40px; font-weight: bold;}
+        
         .input-group input {
             padding: 8px;
-            font-size: 1em;
-            width: 80px; /* Plus large pour les gros doigts */
+            font-size: 1.1em;
+            width: 70px;
             text-align: center;
             border: 2px solid #ddd;
             border-radius: 5px;
+        }
+
+        /* FORCER L'AFFICHAGE DES FLÈCHES DANS LES INPUTS (Mobile & Webkit) */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button {  
+            -webkit-appearance: inner-spin-button !important;
+            opacity: 1 !important;
+            height: 30px; /* Rendre les flèches plus hautes pour le tactile */
         }
 
         button {
             background-color: #d32f2f;
             color: white;
             border: none;
-            padding: 15px 20px; /* Bouton plus gros pour le tactile */
+            padding: 15px 20px;
             font-size: 1.2em;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
-            width: 100%; /* Bouton pleine largeur */
+            width: 100%;
             transition: background 0.3s;
         }
         button:hover { background-color: #b71c1c; }
 
         #info-msg {
-            margin-top: 15px;
+            margin-top: 20px;
             font-weight: bold;
             min-height: 40px;
             text-align: center;
+            padding: 10px;
+            background: #fafafa;
+            border-radius: 5px;
         }
 
         .footer { margin-top: 30px; font-size: 0.8em; color: #999; text-align: center;}
         a { color: #d32f2f; text-decoration: none; }
 
-        /* --- C'EST ICI QUE LA MAGIE OPÈRE POUR LE MOBILE --- */
+        /* --- MOBILE (Ecrans < 768px) --- */
         @media (max-width: 768px) {
-            /* On réorganise l'ordre d'affichage dans .controls */
+            .game-container {
+                flex-direction: column; /* On passe en colonne */
+                align-items: center;
+                padding: 10px;
+                gap: 15px;
+            }
+
             .controls {
+                width: 100%;
                 display: flex;
                 flex-direction: column;
             }
 
-            /* On force la liste des cibles à aller tout en bas (ordre 2) */
-            .targets {
-                order: 2; 
-                margin-top: 20px;
-                border-top: 2px dashed #eee; /* Petite séparation visuelle */
-            }
+            /* REORGANISATION MOBILE : Inputs en haut, Liste en bas */
+            .targets { order: 2; margin-top: 20px; border-top: 2px dashed #eee; }
+            h3, .input-group, button, #info-msg { order: 1; }
 
-            /* On force le titre "Coordonnées" et les inputs à rester en haut (ordre 1) */
-            h3, .input-group, button, #info-msg {
-                order: 1;
-            }
-            
-            /* Ajustement canvas pour petits écrans */
+            .input-group { justify-content: center; } /* Centrer les inputs sur mobile */
+
+            /* Canvas un peu plus petit sur mobile */
             canvas {
-                width: 300px;
-                height: 300px;
+                width: 320px;
+                height: 320px;
             }
         }
     </style>
@@ -133,11 +152,12 @@
     <div class="subtitle">Raphaël CHAILLIÉ</div>
 
     <div class="game-container">
-        <div>
+        <div class="canvas-area">
             <canvas id="gameCanvas" width="400" height="400"></canvas>
         </div>
 
         <div class="controls">
+            
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
                 <div id="list-ships">
@@ -148,11 +168,11 @@
             
             <div class="input-group">
                 <label>x :</label>
-                <input type="number" id="inputX" min="-4" max="4">
+                <input type="number" id="inputX" min="-4" max="4" step="1">
             </div>
             <div class="input-group">
                 <label>y :</label>
-                <input type="number" id="inputY" min="-4" max="4">
+                <input type="number" id="inputY" min="-4" max="4" step="1">
             </div>
 
             <button onclick="tirer()">FEU !</button>
@@ -175,7 +195,6 @@
 
         let grille = [];
         let flotte = {};
-        // Types de bateaux
         const typesBateaux = [
             {nom: "Porte-Avions", taille: 5},
             {nom: "Croiseur", taille: 4},
@@ -183,16 +202,16 @@
             {nom: "Torpilleur", taille: 2}
         ];
 
-        // Initialisation de la grille vide (9x9)
+        // Init Grille
         for(let i=0; i<9; i++) {
             grille.push(new Array(9).fill(0));
         }
 
-        // Placement aléatoire des bateaux
+        // Placement Bateaux
         typesBateaux.forEach(bateau => {
             let place = false;
             while(!place) {
-                let direction = Math.floor(Math.random() * 2); // 0 horiz, 1 vert
+                let direction = Math.floor(Math.random() * 2); 
                 let coords = [];
                 let libre = true;
 
@@ -205,7 +224,7 @@
                     if(libre) {
                         for(let k=0; k<bateau.taille; k++) {
                             grille[l_dep][c_dep + k] = 1;
-                            coords.push(`${c_dep + k},${l_dep}`); // On stocke "x,y" en string
+                            coords.push(`${c_dep + k},${l_dep}`);
                         }
                         flotte[bateau.nom] = coords;
                         place = true;
@@ -228,95 +247,97 @@
             }
         });
 
-        // Affichage de la liste des bateaux dans le HTML
+        // Affichage Liste
         const listContainer = document.getElementById('list-ships');
         typesBateaux.forEach(b => {
             let div = document.createElement('div');
             div.className = 'target-item';
-            div.id = 'ship-' + b.nom.replace(' ', '-'); // ID unique sans espace
+            div.id = 'ship-' + b.nom.replace(' ', '-');
             div.innerText = `• ${b.nom} (${b.taille})`;
             listContainer.appendChild(div);
         });
 
-        // --- 2. FONCTIONS DE DESSIN ---
+        // --- 2. DESSIN ---
 
         function dessinerRepere() {
-            // Fond blanc
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 400, 400);
 
-            // Grille
+            // Grille légère
             ctx.strokeStyle = "lightgrey";
             ctx.lineWidth = 1;
             ctx.beginPath();
             for(let i = -4; i <= 4; i++) {
                 let pos = i * ECHELLE;
-                // Verticales
-                ctx.moveTo(CENTRE_X + pos, 0);
-                ctx.lineTo(CENTRE_X + pos, 400);
-                // Horizontales
-                ctx.moveTo(0, CENTRE_Y + pos);
-                ctx.lineTo(400, CENTRE_Y + pos);
+                ctx.moveTo(CENTRE_X + pos, 0); ctx.lineTo(CENTRE_X + pos, 400);
+                ctx.moveTo(0, CENTRE_Y + pos); ctx.lineTo(400, CENTRE_Y + pos);
             }
             ctx.stroke();
 
-            // Axes
+            // AXES PRINCIPAUX
             ctx.strokeStyle = "black";
+            ctx.fillStyle = "black"; // Pour les pointes de flèches
             ctx.lineWidth = 2;
             ctx.beginPath();
-            // Y
-            ctx.moveTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X, 400);
-            // X
-            ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y);
+            
+            // Axe Y (Vertical) - Flèche vers le HAUT
+            ctx.moveTo(CENTRE_X, 400); 
+            ctx.lineTo(CENTRE_X, 0); // Ligne
+            // Pointe de flèche Y
+            ctx.moveTo(CENTRE_X - 5, 10); 
+            ctx.lineTo(CENTRE_X, 0); 
+            ctx.lineTo(CENTRE_X + 5, 10);
+
+            // Axe X (Horizontal) - Flèche vers la DROITE
+            ctx.moveTo(0, CENTRE_Y); 
+            ctx.lineTo(400, CENTRE_Y); // Ligne
+            // Pointe de flèche X
+            ctx.moveTo(390, CENTRE_Y - 5); 
+            ctx.lineTo(400, CENTRE_Y); 
+            ctx.lineTo(390, CENTRE_Y + 5);
+            
             ctx.stroke();
 
-            // Flèches (simplifiées)
-            ctx.font = "bold 12px Arial";
-            ctx.fillStyle = "black";
+            // Labels x et y
+            ctx.font = "bold 14px Arial";
             ctx.fillText("y", CENTRE_X + 10, 15);
-            ctx.fillText("x", 385, CENTRE_Y - 10);
+            ctx.fillText("x", 385, CENTRE_Y - 15);
 
             // Chiffres
-            ctx.font = "10px Arial";
+            ctx.font = "11px Arial";
             for(let i = -4; i <= 4; i++) {
                 if(i === 0) {
-                    ctx.fillText("0", CENTRE_X - 10, CENTRE_Y + 12);
+                    ctx.fillText("0", CENTRE_X - 12, CENTRE_Y + 15);
                     continue;
                 }
                 let px = CENTRE_X + (i * ECHELLE);
                 let py = CENTRE_Y - (i * ECHELLE);
                 ctx.fillText(i, px - 3, CENTRE_Y + 15); // Axe X
-                ctx.fillText(i, CENTRE_X - 15, py + 3); // Axe Y
+                ctx.fillText(i, CENTRE_X - 18, py + 4); // Axe Y
             }
         }
 
-        // On garde en mémoire les tirs précédents pour les redessiner
         let historiqueTirs = []; 
 
         function redessinerTout() {
             ctx.clearRect(0, 0, 400, 400);
             dessinerRepere();
             
-            // Redessiner tous les points
             historiqueTirs.forEach(tir => {
                 let px = CENTRE_X + (tir.x * ECHELLE);
                 let py = CENTRE_Y - (tir.y * ECHELLE);
                 
-                // Si c'est le dernier tir, on met les pointillés
                 if(tir === historiqueTirs[historiqueTirs.length - 1]) {
                     ctx.beginPath();
-                    ctx.setLineDash([4, 4]); // Pointillés
+                    ctx.setLineDash([4, 4]);
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = "red";
-                    // Vers axe X
                     ctx.moveTo(px, py); ctx.lineTo(px, CENTRE_Y);
-                    // Vers axe Y
                     ctx.moveTo(px, py); ctx.lineTo(CENTRE_X, py);
                     ctx.stroke();
-                    ctx.setLineDash([]); // Reset
+                    ctx.setLineDash([]);
                 }
 
-                // Le point
                 ctx.beginPath();
                 ctx.arc(px, py, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = tir.couleur;
@@ -327,7 +348,7 @@
             });
         }
 
-        // --- 3. LOGIQUE DE JEU ---
+        // --- 3. JEU ---
 
         function tirer() {
             let info = document.getElementById('info-msg');
@@ -348,7 +369,6 @@
                 return;
             }
 
-            // Conversion coordonnées -> indices tableau
             let col = x + 4;
             let lig = 4 - y;
             let val = grille[lig][col];
@@ -369,17 +389,13 @@
                 grille[lig][col] = 3;
                 historiqueTirs.push({x: x, y: y, couleur: "red"});
                 
-                // Vérif Coulé
                 let nomCoule = "";
                 let cleASupprimer = "";
 
-                // On parcourt la flotte
                 for (const [nom, coords] of Object.entries(flotte)) {
-                    // On cherche si le point actuel est dans ce bateau
-                    // Note: coords est un tableau de strings "col,lig"
                     let index = coords.indexOf(`${col},${lig}`);
                     if (index > -1) {
-                        coords.splice(index, 1); // On retire la coordonnée touchée
+                        coords.splice(index, 1);
                         if (coords.length === 0) {
                             nomCoule = nom;
                             cleASupprimer = nom;
@@ -392,15 +408,11 @@
                     delete flotte[cleASupprimer];
                     info.style.color = "red";
                     info.innerText = `BOUM ! ${nomCoule} COULÉ !`;
-                    
-                    // Rayer le nom
-                    let idNom = 'ship-' + nomCoule.replace(' ', '-');
-                    document.getElementById(idNom).classList.add('sunk');
+                    document.getElementById('ship-' + nomCoule.replace(' ', '-')).classList.add('sunk');
 
                     if(Object.keys(flotte).length === 0) {
-                        setTimeout(() => alert("VICTOIRE ! Toute la flotte est coulée !"), 100);
+                        setTimeout(() => alert("VICTOIRE !"), 100);
                     }
-
                 } else {
                     info.style.color = "red";
                     info.innerText = "BOUM ! Touché !";
@@ -408,19 +420,17 @@
             }
 
             redessinerTout();
-            inputX.value = "";
-            inputY.value = "";
+            // On ne vide pas les inputs pour permettre de tirer rapidement à côté si besoin
+            // inputX.value = ""; inputY.value = ""; 
             inputX.focus();
         }
 
-        // Ajout touche Entrée pour valider
         document.addEventListener('keydown', function(event) {
             if(event.key === "Enter") {
                 tirer();
             }
         });
 
-        // Premier dessin
         dessinerRepere();
 
     </script>
