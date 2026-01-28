@@ -16,12 +16,7 @@
             padding: 10px;
         }
         
-        h1 { 
-            color: #333; 
-            margin-bottom: 20px; 
-            font-size: 1.8em; 
-            text-align: center; 
-        }
+        h1 { color: #333; margin-bottom: 20px; font-size: 1.8em; text-align: center; }
         
         .game-container {
             display: flex;
@@ -36,11 +31,7 @@
             max-width: 100%;
         }
 
-        .canvas-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        .canvas-area { display: flex; justify-content: center; align-items: center; }
 
         canvas {
             background-color: white;
@@ -50,11 +41,7 @@
             height: auto;
         }
 
-        .controls {
-            display: flex;
-            flex-direction: column;
-            min-width: 250px;
-        }
+        .controls { display: flex; flex-direction: column; min-width: 250px; }
 
         .score-box {
             background-color: #333;
@@ -66,11 +53,7 @@
             font-size: 1.2em;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .score-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #4CAF50;
-        }
+        .score-number { font-size: 1.5em; font-weight: bold; color: #4CAF50; }
 
         .targets { 
             margin-bottom: 20px; 
@@ -88,9 +71,7 @@
             justify-content: flex-start; 
             gap: 10px; 
         }
-        
         .input-group label { font-weight: bold; font-size: 1.2em; width: 30px; }
-        
         .input-group input {
             padding: 8px;
             font-size: 1.2em;
@@ -102,10 +83,7 @@
             -moz-appearance: textfield; 
         }
         .input-group input::-webkit-outer-spin-button,
-        .input-group input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        .input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         .btn-nav {
             background-color: #e0e0e0;
@@ -150,17 +128,11 @@
             border-radius: 5px;
         }
 
-        .footer { 
-            margin-top: 30px; 
-            font-size: 0.9em; 
-            color: #666; 
-            text-align: center;
-            line-height: 1.6;
-        }
+        .footer { margin-top: 30px; font-size: 0.9em; color: #666; text-align: center; line-height: 1.6; }
         .author-name { font-weight: bold; font-size: 1.1em; color: #333; }
         a { color: #d32f2f; text-decoration: none; }
 
-        /* MODALE VICTOIRE */
+        /* --- MODALE VICTOIRE --- */
         .modal-overlay {
             display: none; 
             position: fixed;
@@ -178,7 +150,7 @@
             border-radius: 15px;
             text-align: center;
             max-width: 90%;
-            width: 400px;
+            width: 450px; /* Un peu plus large pour la jauge */
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             animation: popIn 0.3s ease-out;
         }
@@ -190,9 +162,45 @@
 
         .victory-icon { font-size: 60px; margin-bottom: 10px; }
         .victory-title { color: #d32f2f; margin: 10px 0; font-size: 2em; }
-        .victory-stats { font-size: 1.2em; margin: 20px 0; color: #555; line-height: 1.5; }
+        .victory-stats { font-size: 1.2em; margin: 10px 0; color: #555; line-height: 1.5; }
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
+
+        /* --- NOUVELLE JAUGE DE SCORE --- */
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 25px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            width: 0%; /* Animé par JS */
+            background-color: #4CAF50;
+            border-radius: 15px 0 0 15px;
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Les petits traits pour les paliers */
+        .gauge-tick {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background-color: rgba(255,255,255,0.8);
+            z-index: 2;
+        }
+        .tick-label {
+            position: absolute;
+            top: 28px;
+            font-size: 0.7em;
+            color: #999;
+            transform: translateX(-50%);
+        }
 
         .btn-replay {
             background-color: #4CAF50;
@@ -203,19 +211,14 @@
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 30px;
             transition: transform 0.2s;
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
         /* --- MOBILE --- */
         @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px;
-                gap: 15px;
-            }
+            .game-container { flex-direction: column; align-items: center; padding: 10px; gap: 15px; }
             .controls { width: 100%; }
             h3, .input-group, .btn-feu, #info-msg { order: 1; }
             .score-box { order: 2; margin-top: 20px; margin-bottom: 10px;}
@@ -231,10 +234,26 @@
         <div class="modal-content">
             <div class="victory-icon">🏆</div>
             <h2 class="victory-title">VICTOIRE !</h2>
+            
             <div class="victory-stats">
                 Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
                 Précision : <strong id="final-accuracy">0%</strong>
             </div>
+
+            <div class="gauge-container">
+                <div id="gauge-fill" class="gauge-fill"></div>
+                
+                <div class="gauge-tick" style="left: 20%;"></div>
+                <div class="gauge-tick" style="left: 30%;"></div>
+                <div class="gauge-tick" style="left: 50%;"></div>
+            </div>
+            <div style="position: relative; height: 15px; width: 100%;">
+                <div class="tick-label" style="left: 20%">20%</div>
+                <div class="tick-label" style="left: 30%">30%</div>
+                <div class="tick-label" style="left: 50%">50%</div>
+                <div class="tick-label" style="left: 95%">100%</div>
+            </div>
+
             <div>
                 <div class="rank-label">Votre Rang</div>
                 <div id="final-rank" class="victory-rank">MATELOT</div>
@@ -284,7 +303,7 @@
     <div class="footer">
         <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
-        <a href="https://github.com/Raph81212/bataille-navale">Voir le code sur GitHub</a>
+        <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
     </div>
 
     <script>
@@ -371,12 +390,11 @@
             }
         }
 
-        // --- PARTIE 1 : DESSIN DE LA GRILLE (FOND) ---
+        // --- DESSIN GRILLE ---
         function dessinerGrille() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 400, 400);
 
-            // Grille légère
             ctx.strokeStyle = "lightgrey";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -387,32 +405,23 @@
             }
             ctx.stroke();
 
-            // AXES NOIRS
             ctx.strokeStyle = "black";
             ctx.fillStyle = "black";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            
-            // Axe Y
             ctx.moveTo(CENTRE_X, 400); ctx.lineTo(CENTRE_X, 0); 
             ctx.moveTo(CENTRE_X - 5, 10); ctx.lineTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X + 5, 10);
-
-            // Axe X
             ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y); 
             ctx.moveTo(390, CENTRE_Y - 5); ctx.lineTo(400, CENTRE_Y); ctx.lineTo(390, CENTRE_Y + 5);
-            
             ctx.stroke();
         }
 
-        // --- PARTIE 2 : DESSIN DES CHIFFRES (AU DESSUS) ---
+        // --- DESSIN CHIFFRES ---
         function dessinerChiffres() {
             ctx.fillStyle = "black";
-            // MODIF : Taille augmentée pour les labels X et Y
             ctx.font = "bold 16px Arial";
             ctx.fillText("y", CENTRE_X + 10, 15);
             ctx.fillText("x", 385, CENTRE_Y - 15);
-
-            // MODIF : Taille augmentée pour les chiffres
             ctx.font = "13px Arial";
             for(let i = -4; i <= 4; i++) {
                 if(i === 0) {
@@ -421,7 +430,6 @@
                 }
                 let px = CENTRE_X + (i * ECHELLE);
                 let py = CENTRE_Y - (i * ECHELLE);
-                
                 ctx.fillText(i, px - 3, CENTRE_Y + 15);
                 ctx.fillText(i, CENTRE_X - 18, py + 4);
             }
@@ -429,30 +437,22 @@
 
         let historiqueTirs = []; 
 
-        // --- FONCTION PRINCIPALE DE DESSIN ---
         function redessinerTout() {
             ctx.clearRect(0, 0, 400, 400);
-            
-            // 1. On dessine la grille
             dessinerGrille();
-            
-            // 2. On dessine les tirs
             historiqueTirs.forEach(tir => {
                 let px = CENTRE_X + (tir.x * ECHELLE);
                 let py = CENTRE_Y - (tir.y * ECHELLE);
-                
                 if(tir === historiqueTirs[historiqueTirs.length - 1]) {
                     ctx.beginPath();
                     ctx.setLineDash([4, 4]);
                     ctx.lineWidth = 2;
-                    // MODIF : Couleur rouge avec transparence (0.6)
                     ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
                     ctx.moveTo(px, py); ctx.lineTo(px, CENTRE_Y);
                     ctx.moveTo(px, py); ctx.lineTo(CENTRE_X, py);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 }
-
                 ctx.beginPath();
                 ctx.arc(px, py, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = tir.couleur;
@@ -461,12 +461,10 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
             });
-
-            // 3. EN TOUT DERNIER : On redessine les chiffres
             dessinerChiffres();
         }
 
-        // --- 3. JEU ---
+        // --- JEU ---
         function tirer() {
             let info = document.getElementById('info-msg');
             let inputX = document.getElementById('inputX');
@@ -581,10 +579,20 @@
             elRank.style.color = rangColor;
             document.getElementById('final-comment').innerText = rangCom;
 
+            // Afficher la modale
             document.getElementById('victoryModal').style.display = 'flex';
+            
+            // Animation de la jauge
+            const gauge = document.getElementById('gauge-fill');
+            // On met la couleur du rang
+            gauge.style.backgroundColor = rangColor;
+            
+            // On attend 100ms pour que l'animation CSS se lance
+            setTimeout(() => {
+                gauge.style.width = precision + "%";
+            }, 100);
         }
 
-        // Premier dessin
         dessinerGrille();
         dessinerChiffres();
 
