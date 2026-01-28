@@ -2,7 +2,7 @@
 
 > Un jeu de stratégie éducatif pour maîtriser le repère cartésien.
 
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.1-blue)
 ![License](https://img.shields.io/badge/license-Copyleft-red)
 ![Aperçu du jeu](screenshot.png)
 
@@ -10,7 +10,7 @@
 
 Pas besoin d'installation ! Le jeu est disponible directement dans votre navigateur (PC, Tablette, Mobile).
 
-👉 **[CLIQUEZ ICI POUR JOUER](https://raph81212.github.io/bataille-navale/)**
+👉 **[CLIQUEZ ICI POUR JOUER](https://raph81212.github.io/bataille-navalle/)**
 
 ---
 
@@ -18,16 +18,32 @@ Pas besoin d'installation ! Le jeu est disponible directement dans votre navigat
 
 **Bataille Navale Relative** revisite le célèbre jeu de société en y intégrant une dimension mathématique. Au lieu des classiques "A1, B2", le joueur doit utiliser des **coordonnées relatives (x, y)** comprises entre **-4 et 4**.
 
-L'objectif est de travaillé la compétence "se repérer sur une droite graduée, dans le plan muni d'un repère orthogonal".
+L'objectif est pédagogique et ludique : aider à visualiser et comprendre le fonctionnement d'un repère orthonormé (abscisses et ordonnées) tout en s'amusant.
 
 ### ✨ Fonctionnalités
 * **Repère Cartésien :** Grille centrée sur (0,0) avec axes x et y visibles.
-* **Interface :** S'adapte parfaitement aux ordinateurs et aux téléphones portables.
+* **Interface Responsive :** S'adapte parfaitement aux ordinateurs et aux téléphones portables.
 * **Contrôles Tactiles :** Boutons `+` et `-` pour une saisie facile sur mobile.
 * **Retour Visuel :**
     * 🔴 Rouge : Touché (avec lignes pointillées pour repérer les coordonnées).
     * 🔘 Gris : Dans l'eau.
-* **Suivi de la Flotte :** Liste des navires ennemis qui se raye automatiquement lorsqu'un bateau est coulé.
+* **Suivi de la Flotte :** Liste des navires ennemis qui se raye automatiquement.
+* **Système de Score :** Calcul de l'efficacité et attribution d'un grade militaire en fin de partie.
+
+---
+
+## 🏆 Système de Score
+
+Le jeu récompense la réflexion. Moins vous utilisez de coups, plus votre rang sera élevé !
+Le score est basé sur votre **précision** (Nombre de touches / Nombre de coups).
+
+| Précision | Grade obtenu |
+| :--- | :--- |
+| **100%** | 🌟 Légende Vivante |
+| **> 50%** | 🏆 Grand Amiral |
+| **> 30%** | 🎖️ Capitaine Avisé |
+| **> 20%** | ⚓ Matelot Débrouillard |
+| **< 20%** | 🛟 Moussaillon du Dimanche |
 
 ---
 
@@ -60,24 +76,10 @@ Ce projet contient deux versions du jeu :
 
 1.  **Version Web (Actuelle) :**
     * HTML5 / CSS3 (Design responsive Flexbox)
-    * JavaScript (Canvas API pour le dessin)
+    * JavaScript (Canvas API)
 2.  **Version Desktop (Originale) :**
     * Python 3
     * Tkinter (GUI)
-
----
-
-## 📏 Règles du jeu
-
-1.  La flotte ennemie est cachée quelque part dans la grille de **-4 à 4**.
-2.  Entrez une coordonnée **x** (horizontale) et **y** (verticale).
-3.  Appuyez sur **FEU !**.
-4.  Si vous touchez un navire, un point rouge apparaît. Si vous coulez un navire entier, son nom est rayé de la liste.
-5.  Gagnez en coulant les 4 navires :
-    * 1 Porte-Avions (5 cases)
-    * 1 Croiseur (4 cases)
-    * 1 Contre-Torpilleur (3 cases)
-    * 1 Torpilleur (2 cases)
 
 ---
 
@@ -89,3 +91,4 @@ Ce projet contient deux versions du jeu :
 * Licence : Copyleft (ɔ) - Vous êtes libre de partager et modifier ce code.
 
 ---
+*Fait avec ❤️ et des maths.*
