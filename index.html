@@ -150,7 +150,7 @@
             border-radius: 15px;
             text-align: center;
             max-width: 90%;
-            width: 450px; /* Un peu plus large pour la jauge */
+            width: 450px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             animation: popIn 0.3s ease-out;
         }
@@ -166,7 +166,7 @@
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
 
-        /* --- NOUVELLE JAUGE DE SCORE --- */
+        /* JAUGE DE SCORE */
         .gauge-container {
             position: relative;
             width: 100%;
@@ -180,13 +180,12 @@
         
         .gauge-fill {
             height: 100%;
-            width: 0%; /* Animé par JS */
+            width: 0%;
             background-color: #4CAF50;
             border-radius: 15px 0 0 15px;
             transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        /* Les petits traits pour les paliers */
         .gauge-tick {
             position: absolute;
             top: 0; bottom: 0;
@@ -242,7 +241,6 @@
 
             <div class="gauge-container">
                 <div id="gauge-fill" class="gauge-fill"></div>
-                
                 <div class="gauge-tick" style="left: 20%;"></div>
                 <div class="gauge-tick" style="left: 30%;"></div>
                 <div class="gauge-tick" style="left: 50%;"></div>
@@ -485,18 +483,20 @@
                 return;
             }
 
+            // 1. Incrémentation AVANT le test du "Déjà visé"
+            nbCoups++;
+            scoreDisplay.innerText = nbCoups;
+
             let col = x + 4;
             let lig = 4 - y;
             let val = grille[lig][col];
 
+            // 2. Si déjà visé, on arrête là (mais le coup est compté)
             if(val >= 2) {
                 info.style.color = "blue";
-                info.innerText = `Déjà visé (${x}, ${y})`;
+                info.innerText = `Déjà visé (${x}, ${y}) ! (Coup gaspillé)`;
                 return;
             }
-
-            nbCoups++;
-            scoreDisplay.innerText = nbCoups;
 
             if(val === 0) { // EAU
                 grille[lig][col] = 2;
@@ -579,15 +579,11 @@
             elRank.style.color = rangColor;
             document.getElementById('final-comment').innerText = rangCom;
 
-            // Afficher la modale
             document.getElementById('victoryModal').style.display = 'flex';
             
-            // Animation de la jauge
             const gauge = document.getElementById('gauge-fill');
-            // On met la couleur du rang
             gauge.style.backgroundColor = rangColor;
             
-            // On attend 100ms pour que l'animation CSS se lance
             setTimeout(() => {
                 gauge.style.width = precision + "%";
             }, 100);
