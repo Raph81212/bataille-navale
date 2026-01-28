@@ -10,7 +10,7 @@
 
 Pas besoin d'installation ! Le jeu est disponible directement dans votre navigateur (PC, Tablette, Mobile).
 
-👉 **[CLIQUEZ ICI POUR JOUER](https://raph81212.github.io/bataille-navalle/)**
+👉 **[CLIQUEZ ICI POUR JOUER](https://raph81212.github.io/bataille-navale/)**
 
 ---
 
