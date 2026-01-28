@@ -16,7 +16,6 @@
             padding: 10px;
         }
         
-        /* Titre un peu plus grand et avec plus de marge en bas maintenant qu'il est seul */
         h1 { 
             color: #333; 
             margin-bottom: 20px; 
@@ -57,6 +56,22 @@
             min-width: 250px;
         }
 
+        .score-box {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .score-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
         .targets { 
             margin-bottom: 20px; 
             background: #f9f9f9;
@@ -66,7 +81,6 @@
         .target-item { margin: 5px 0; color: #333; font-size: 0.95em; }
         .sunk { text-decoration: line-through; color: grey; }
 
-        /* CONTROLES */
         .input-group {
             margin: 15px 0;
             display: flex;
@@ -75,11 +89,7 @@
             gap: 10px; 
         }
         
-        .input-group label { 
-            font-weight: bold; 
-            font-size: 1.2em; 
-            width: 30px;
-        }
+        .input-group label { font-weight: bold; font-size: 1.2em; width: 30px; }
         
         .input-group input {
             padding: 8px;
@@ -89,7 +99,7 @@
             border: 2px solid #ddd;
             border-radius: 5px;
             font-weight: bold;
-            -moz-appearance: textfield;
+            -moz-appearance: textfield; 
         }
         .input-group input::-webkit-outer-spin-button,
         .input-group input::-webkit-inner-spin-button {
@@ -97,7 +107,6 @@
             margin: 0;
         }
 
-        /* Boutons + et - */
         .btn-nav {
             background-color: #e0e0e0;
             color: #333;
@@ -148,12 +157,56 @@
             text-align: center;
             line-height: 1.6;
         }
-        .author-name {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: #333;
-        }
+        .author-name { font-weight: bold; font-size: 1.1em; color: #333; }
         a { color: #d32f2f; text-decoration: none; }
+
+        /* --- STYLE DE LA MODALE DE VICTOIRE --- */
+        .modal-overlay {
+            display: none; /* Caché par défaut */
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .victory-icon { font-size: 60px; margin-bottom: 10px; }
+        .victory-title { color: #d32f2f; margin: 10px 0; font-size: 2em; }
+        .victory-stats { font-size: 1.2em; margin: 20px 0; color: #555; line-height: 1.5; }
+        .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
+        .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
+
+        .btn-replay {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
         @media (max-width: 768px) {
             .game-container {
@@ -162,26 +215,39 @@
                 padding: 10px;
                 gap: 15px;
             }
-
-            .controls {
-                width: 100%;
-            }
-
-            .targets { order: 2; margin-top: 20px; border-top: 2px dashed #eee; }
-            h3, .input-group, .btn-feu, #info-msg { order: 1; }
-
+            .controls { width: 100%; }
+            .score-box { order: 1; margin-bottom: 15px;}
+            .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
+            h3, .input-group, .btn-feu, #info-msg { order: 2; }
             .input-group { justify-content: center; } 
-
-            canvas {
-                width: 320px;
-                height: 320px;
-            }
+            canvas { width: 320px; height: 320px; }
         }
     </style>
 </head>
 <body>
 
+    <div id="victoryModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="victory-icon">🏆</div>
+            <h2 class="victory-title">VICTOIRE !</h2>
+            
+            <div class="victory-stats">
+                Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
+                Précision : <strong id="final-accuracy">0%</strong>
+            </div>
+
+            <div>
+                <div class="rank-label">Votre Rang</div>
+                <div id="final-rank" class="victory-rank">MATELOT</div>
+                <div id="final-comment" style="font-style: italic; font-size: 0.9em; margin-top:5px; color:#666;"></div>
+            </div>
+
+            <button class="btn-replay" onclick="location.reload()">Rejouer une partie</button>
+        </div>
+    </div>
+
     <h1>Bataille Navale Relative</h1>
+
     <div class="game-container">
         <div class="canvas-area">
             <canvas id="gameCanvas" width="400" height="400"></canvas>
@@ -189,6 +255,10 @@
 
         <div class="controls">
             
+            <div class="score-box">
+                Coups tirés : <span id="score-val" class="score-number">0</span>
+            </div>
+
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
                 <div id="list-ships"></div>
@@ -231,6 +301,8 @@
 
         let grille = [];
         let flotte = {};
+        let nbCoups = 0;
+
         const typesBateaux = [
             {nom: "Porte-Avions", taille: 5},
             {nom: "Croiseur", taille: 4},
@@ -303,7 +375,6 @@
             }
         }
 
-        // --- 2. DESSIN ---
         function dessinerRepere() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 400, 400);
@@ -325,11 +396,9 @@
             ctx.lineWidth = 2;
             ctx.beginPath();
             
-            // Axe Y
             ctx.moveTo(CENTRE_X, 400); ctx.lineTo(CENTRE_X, 0); 
             ctx.moveTo(CENTRE_X - 5, 10); ctx.lineTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X + 5, 10);
 
-            // Axe X
             ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y); 
             ctx.moveTo(390, CENTRE_Y - 5); ctx.lineTo(400, CENTRE_Y); ctx.lineTo(390, CENTRE_Y + 5);
             
@@ -388,6 +457,7 @@
             let info = document.getElementById('info-msg');
             let inputX = document.getElementById('inputX');
             let inputY = document.getElementById('inputY');
+            let scoreDisplay = document.getElementById('score-val');
 
             let x = parseInt(inputX.value);
             let y = parseInt(inputY.value);
@@ -412,6 +482,9 @@
                 info.innerText = `Déjà visé (${x}, ${y})`;
                 return;
             }
+
+            nbCoups++;
+            scoreDisplay.innerText = nbCoups;
 
             if(val === 0) { // EAU
                 grille[lig][col] = 2;
@@ -445,7 +518,8 @@
                     document.getElementById('ship-' + nomCoule.replace(' ', '-')).classList.add('sunk');
 
                     if(Object.keys(flotte).length === 0) {
-                        setTimeout(() => alert("VICTOIRE !"), 100);
+                        // VICTOIRE - Lancer la modale
+                        afficherVictoire();
                     }
                 } else {
                     info.style.color = "red";
@@ -454,6 +528,51 @@
             }
 
             redessinerTout();
+        }
+
+        // --- NOUVELLE FONCTION D'AFFICHAGE VICTOIRE ---
+        function afficherVictoire() {
+            const perfection = 14;
+            let precision = Math.round((perfection / nbCoups) * 100);
+            
+            document.getElementById('final-shots').innerText = nbCoups;
+            document.getElementById('final-accuracy').innerText = precision + "%";
+
+            // Logique de Rang
+            let rangTitre = "";
+            let rangCom = "";
+            let rangColor = "";
+
+            if (precision === 100) {
+                rangTitre = "LÉGENDE VIVANTE";
+                rangCom = "Incroyable ! Vous lisez dans les pensées ?";
+                rangColor = "#FFD700"; // Or
+            } else if (precision > 50) { // < 28 coups
+                rangTitre = "GRAND AMIRAL";
+                rangCom = "Une stratégie militaire impitoyable.";
+                rangColor = "#FFD700";
+            } else if (precision > 30) { // < 46 coups
+                rangTitre = "CAPITAINE AVISÉ";
+                rangCom = "Bien joué ! Vous maîtrisez le repère.";
+                rangColor = "#C0C0C0"; // Argent
+            } else if (precision > 20) { // < 70 coups
+                rangTitre = "MATELOT DÉBROUILLARD";
+                rangCom = "Victoire validée, mais attention aux munitions !";
+                rangColor = "#CD7F32"; // Bronze
+            } else {
+                rangTitre = "MOUSSAILLON DU DIMANCHE";
+                rangCom = "Gagné par la force du hasard (et beaucoup de patience).";
+                rangColor = "#333";
+            }
+
+            const elRank = document.getElementById('final-rank');
+            elRank.innerText = rangTitre;
+            elRank.style.color = rangColor;
+            
+            document.getElementById('final-comment').innerText = rangCom;
+
+            // Afficher la modale (Flexbox)
+            document.getElementById('victoryModal').style.display = 'flex';
         }
 
         dessinerRepere();
