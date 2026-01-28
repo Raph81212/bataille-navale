@@ -62,7 +62,7 @@
             padding: 15px;
             border-radius: 8px;
             text-align: center;
-            margin-bottom: 20px; /* Marge en bas sur PC */
+            margin-bottom: 20px;
             font-size: 1.2em;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
@@ -208,7 +208,7 @@
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
-        /* --- MOBILE : RÉORGANISATION COMPLÈTE --- */
+        /* --- MOBILE --- */
         @media (max-width: 768px) {
             .game-container {
                 flex-direction: column;
@@ -217,32 +217,9 @@
                 gap: 15px;
             }
             .controls { width: 100%; }
-            
-            /* ORDRE MOBILE :
-               1. Inputs, Titre, Bouton Feu, Message (EN HAUT)
-               2. Le Score (JUSTE SOUS LE BOUTON)
-               3. La Liste des bateaux (EN BAS)
-            */
-            
-            /* GROUPE 1 : Tout en haut */
-            h3, .input-group, .btn-feu, #info-msg { 
-                order: 1; 
-            }
-
-            /* GROUPE 2 : Le score en dessous du message */
-            .score-box { 
-                order: 2; 
-                margin-top: 20px; /* Un peu d'espace après le résultat */
-                margin-bottom: 10px;
-            }
-
-            /* GROUPE 3 : La liste tout en bas */
-            .targets { 
-                order: 3; 
-                margin-top: 20px; 
-                border-top: 2px dashed #eee; 
-            }
-
+            h3, .input-group, .btn-feu, #info-msg { order: 1; }
+            .score-box { order: 2; margin-top: 20px; margin-bottom: 10px;}
+            .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
             .input-group { justify-content: center; } 
             canvas { width: 320px; height: 320px; }
         }
@@ -275,11 +252,9 @@
         </div>
 
         <div class="controls">
-            
             <div class="score-box">
                 Coups tirés : <span id="score-val" class="score-number">0</span>
             </div>
-
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
                 <div id="list-ships"></div>
@@ -309,7 +284,7 @@
     <div class="footer">
         <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
-        <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
+        <a href="https://github.com/Raph81212/bataille-navale">Voir le code sur GitHub</a>
     </div>
 
     <script>
@@ -396,11 +371,12 @@
             }
         }
 
-        function dessinerRepere() {
+        // --- PARTIE 1 : DESSIN DE LA GRILLE (FOND) ---
+        function dessinerGrille() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 400, 400);
 
-            // Grille
+            // Grille légère
             ctx.strokeStyle = "lightgrey";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -411,25 +387,33 @@
             }
             ctx.stroke();
 
-            // AXES
+            // AXES NOIRS
             ctx.strokeStyle = "black";
             ctx.fillStyle = "black";
             ctx.lineWidth = 2;
             ctx.beginPath();
             
+            // Axe Y
             ctx.moveTo(CENTRE_X, 400); ctx.lineTo(CENTRE_X, 0); 
             ctx.moveTo(CENTRE_X - 5, 10); ctx.lineTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X + 5, 10);
 
+            // Axe X
             ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y); 
             ctx.moveTo(390, CENTRE_Y - 5); ctx.lineTo(400, CENTRE_Y); ctx.lineTo(390, CENTRE_Y + 5);
             
             ctx.stroke();
+        }
 
-            ctx.font = "bold 14px Arial";
+        // --- PARTIE 2 : DESSIN DES CHIFFRES (AU DESSUS) ---
+        function dessinerChiffres() {
+            ctx.fillStyle = "black";
+            // MODIF : Taille augmentée pour les labels X et Y
+            ctx.font = "bold 16px Arial";
             ctx.fillText("y", CENTRE_X + 10, 15);
             ctx.fillText("x", 385, CENTRE_Y - 15);
 
-            ctx.font = "11px Arial";
+            // MODIF : Taille augmentée pour les chiffres
+            ctx.font = "13px Arial";
             for(let i = -4; i <= 4; i++) {
                 if(i === 0) {
                     ctx.fillText("0", CENTRE_X - 12, CENTRE_Y + 15);
@@ -437,6 +421,7 @@
                 }
                 let px = CENTRE_X + (i * ECHELLE);
                 let py = CENTRE_Y - (i * ECHELLE);
+                
                 ctx.fillText(i, px - 3, CENTRE_Y + 15);
                 ctx.fillText(i, CENTRE_X - 18, py + 4);
             }
@@ -444,10 +429,14 @@
 
         let historiqueTirs = []; 
 
+        // --- FONCTION PRINCIPALE DE DESSIN ---
         function redessinerTout() {
             ctx.clearRect(0, 0, 400, 400);
-            dessinerRepere();
             
+            // 1. On dessine la grille
+            dessinerGrille();
+            
+            // 2. On dessine les tirs
             historiqueTirs.forEach(tir => {
                 let px = CENTRE_X + (tir.x * ECHELLE);
                 let py = CENTRE_Y - (tir.y * ECHELLE);
@@ -456,7 +445,8 @@
                     ctx.beginPath();
                     ctx.setLineDash([4, 4]);
                     ctx.lineWidth = 2;
-                    ctx.strokeStyle = "red";
+                    // MODIF : Couleur rouge avec transparence (0.6)
+                    ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
                     ctx.moveTo(px, py); ctx.lineTo(px, CENTRE_Y);
                     ctx.moveTo(px, py); ctx.lineTo(CENTRE_X, py);
                     ctx.stroke();
@@ -471,6 +461,9 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
             });
+
+            // 3. EN TOUT DERNIER : On redessine les chiffres
+            dessinerChiffres();
         }
 
         // --- 3. JEU ---
@@ -591,7 +584,9 @@
             document.getElementById('victoryModal').style.display = 'flex';
         }
 
-        dessinerRepere();
+        // Premier dessin
+        dessinerGrille();
+        dessinerChiffres();
 
     </script>
 </body>
