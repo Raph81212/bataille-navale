@@ -62,7 +62,7 @@
             padding: 15px;
             border-radius: 8px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* Marge en bas sur PC */
             font-size: 1.2em;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
@@ -160,9 +160,9 @@
         .author-name { font-weight: bold; font-size: 1.1em; color: #333; }
         a { color: #d32f2f; text-decoration: none; }
 
-        /* --- STYLE DE LA MODALE DE VICTOIRE --- */
+        /* MODALE VICTOIRE */
         .modal-overlay {
-            display: none; /* Caché par défaut */
+            display: none; 
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -208,6 +208,7 @@
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
+        /* --- MOBILE : RÉORGANISATION COMPLÈTE --- */
         @media (max-width: 768px) {
             .game-container {
                 flex-direction: column;
@@ -216,9 +217,32 @@
                 gap: 15px;
             }
             .controls { width: 100%; }
-            .score-box { order: 1; margin-bottom: 15px;}
-            .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
-            h3, .input-group, .btn-feu, #info-msg { order: 2; }
+            
+            /* ORDRE MOBILE :
+               1. Inputs, Titre, Bouton Feu, Message (EN HAUT)
+               2. Le Score (JUSTE SOUS LE BOUTON)
+               3. La Liste des bateaux (EN BAS)
+            */
+            
+            /* GROUPE 1 : Tout en haut */
+            h3, .input-group, .btn-feu, #info-msg { 
+                order: 1; 
+            }
+
+            /* GROUPE 2 : Le score en dessous du message */
+            .score-box { 
+                order: 2; 
+                margin-top: 20px; /* Un peu d'espace après le résultat */
+                margin-bottom: 10px;
+            }
+
+            /* GROUPE 3 : La liste tout en bas */
+            .targets { 
+                order: 3; 
+                margin-top: 20px; 
+                border-top: 2px dashed #eee; 
+            }
+
             .input-group { justify-content: center; } 
             canvas { width: 320px; height: 320px; }
         }
@@ -230,18 +254,15 @@
         <div class="modal-content">
             <div class="victory-icon">🏆</div>
             <h2 class="victory-title">VICTOIRE !</h2>
-            
             <div class="victory-stats">
                 Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
                 Précision : <strong id="final-accuracy">0%</strong>
             </div>
-
             <div>
                 <div class="rank-label">Votre Rang</div>
                 <div id="final-rank" class="victory-rank">MATELOT</div>
                 <div id="final-comment" style="font-style: italic; font-size: 0.9em; margin-top:5px; color:#666;"></div>
             </div>
-
             <button class="btn-replay" onclick="location.reload()">Rejouer une partie</button>
         </div>
     </div>
@@ -518,7 +539,6 @@
                     document.getElementById('ship-' + nomCoule.replace(' ', '-')).classList.add('sunk');
 
                     if(Object.keys(flotte).length === 0) {
-                        // VICTOIRE - Lancer la modale
                         afficherVictoire();
                     }
                 } else {
@@ -530,7 +550,6 @@
             redessinerTout();
         }
 
-        // --- NOUVELLE FONCTION D'AFFICHAGE VICTOIRE ---
         function afficherVictoire() {
             const perfection = 14;
             let precision = Math.round((perfection / nbCoups) * 100);
@@ -538,7 +557,6 @@
             document.getElementById('final-shots').innerText = nbCoups;
             document.getElementById('final-accuracy').innerText = precision + "%";
 
-            // Logique de Rang
             let rangTitre = "";
             let rangCom = "";
             let rangColor = "";
@@ -546,19 +564,19 @@
             if (precision === 100) {
                 rangTitre = "LÉGENDE VIVANTE";
                 rangCom = "Incroyable ! Vous lisez dans les pensées ?";
-                rangColor = "#FFD700"; // Or
-            } else if (precision > 50) { // < 28 coups
+                rangColor = "#FFD700";
+            } else if (precision > 50) { 
                 rangTitre = "GRAND AMIRAL";
                 rangCom = "Une stratégie militaire impitoyable.";
                 rangColor = "#FFD700";
-            } else if (precision > 30) { // < 46 coups
+            } else if (precision > 30) { 
                 rangTitre = "CAPITAINE AVISÉ";
                 rangCom = "Bien joué ! Vous maîtrisez le repère.";
-                rangColor = "#C0C0C0"; // Argent
-            } else if (precision > 20) { // < 70 coups
+                rangColor = "#C0C0C0"; 
+            } else if (precision > 20) { 
                 rangTitre = "MATELOT DÉBROUILLARD";
                 rangCom = "Victoire validée, mais attention aux munitions !";
-                rangColor = "#CD7F32"; // Bronze
+                rangColor = "#CD7F32"; 
             } else {
                 rangTitre = "MOUSSAILLON DU DIMANCHE";
                 rangCom = "Gagné par la force du hasard (et beaucoup de patience).";
@@ -568,10 +586,8 @@
             const elRank = document.getElementById('final-rank');
             elRank.innerText = rangTitre;
             elRank.style.color = rangColor;
-            
             document.getElementById('final-comment').innerText = rangCom;
 
-            // Afficher la modale (Flexbox)
             document.getElementById('victoryModal').style.display = 'flex';
         }
 
