@@ -16,12 +16,7 @@
             padding: 10px;
         }
         
-        h1 { 
-            color: #333; 
-            margin-bottom: 20px; 
-            font-size: 1.8em; 
-            text-align: center; 
-        }
+        h1 { color: #333; margin-bottom: 20px; font-size: 1.8em; text-align: center; }
         
         .game-container {
             display: flex;
@@ -36,11 +31,7 @@
             max-width: 100%;
         }
 
-        .canvas-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        .canvas-area { display: flex; justify-content: center; align-items: center; }
 
         canvas {
             background-color: white;
@@ -50,11 +41,7 @@
             height: auto;
         }
 
-        .controls {
-            display: flex;
-            flex-direction: column;
-            min-width: 250px;
-        }
+        .controls { display: flex; flex-direction: column; min-width: 250px; }
 
         .score-box {
             background-color: #333;
@@ -66,10 +53,13 @@
             font-size: 1.2em;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .score-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #4CAF50;
+        .score-number { font-size: 1.5em; font-weight: bold; color: #4CAF50; transition: color 0.3s; }
+        .low-ammo { color: #ff3333 !important; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .targets { 
@@ -88,9 +78,7 @@
             justify-content: flex-start; 
             gap: 10px; 
         }
-        
         .input-group label { font-weight: bold; font-size: 1.2em; width: 30px; }
-        
         .input-group input {
             padding: 8px;
             font-size: 1.2em;
@@ -102,10 +90,7 @@
             -moz-appearance: textfield; 
         }
         .input-group input::-webkit-outer-spin-button,
-        .input-group input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        .input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         .btn-nav {
             background-color: #e0e0e0;
@@ -139,6 +124,7 @@
             transition: background 0.3s;
         }
         .btn-feu:hover { background-color: #b71c1c; }
+        .btn-feu:disabled { background-color: #ccc; cursor: not-allowed; }
 
         #info-msg {
             margin-top: 20px;
@@ -150,23 +136,17 @@
             border-radius: 5px;
         }
 
-        .footer { 
-            margin-top: 30px; 
-            font-size: 0.9em; 
-            color: #666; 
-            text-align: center;
-            line-height: 1.6;
-        }
+        .footer { margin-top: 30px; font-size: 0.9em; color: #666; text-align: center; line-height: 1.6; }
         .author-name { font-weight: bold; font-size: 1.1em; color: #333; }
         a { color: #d32f2f; text-decoration: none; }
 
-        /* MODALE VICTOIRE */
+        /* --- MODALES --- */
         .modal-overlay {
             display: none; 
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -178,7 +158,7 @@
             border-radius: 15px;
             text-align: center;
             max-width: 90%;
-            width: 400px;
+            width: 450px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             animation: popIn 0.3s ease-out;
         }
@@ -190,9 +170,56 @@
 
         .victory-icon { font-size: 60px; margin-bottom: 10px; }
         .victory-title { color: #d32f2f; margin: 10px 0; font-size: 2em; }
-        .victory-stats { font-size: 1.2em; margin: 20px 0; color: #555; line-height: 1.5; }
+        .defeat-title { color: #333; margin: 10px 0; font-size: 2em; }
+        
+        .victory-stats { font-size: 1.2em; margin: 10px 0; color: #555; line-height: 1.5; }
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
+
+        /* --- JAUGE --- */
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 15px;
+            margin: 20px 0 0 0; /* Marge bas supprimée ici pour la mettre dans le container des labels */
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff4d4d 0%, #ffc107 50%, #4CAF50 100%);
+            border-radius: 15px 0 0 15px;
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+        
+        .gauge-fill::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 50%;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .gauge-tick {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background-color: rgba(255,255,255,0.6);
+            z-index: 2;
+        }
+        
+        .tick-label {
+            position: absolute;
+            top: 5px; /* Un peu plus proche */
+            font-size: 0.8em;
+            color: #777;
+            font-weight: bold;
+            transform: translateX(-50%);
+        }
 
         .btn-replay {
             background-color: #4CAF50;
@@ -203,19 +230,14 @@
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 30px;
             transition: transform 0.2s;
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
         /* --- MOBILE --- */
         @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px;
-                gap: 15px;
-            }
+            .game-container { flex-direction: column; align-items: center; padding: 10px; gap: 15px; }
             .controls { width: 100%; }
             h3, .input-group, .btn-feu, #info-msg { order: 1; }
             .score-box { order: 2; margin-top: 20px; margin-bottom: 10px;}
@@ -231,16 +253,45 @@
         <div class="modal-content">
             <div class="victory-icon">🏆</div>
             <h2 class="victory-title">VICTOIRE !</h2>
+            
             <div class="victory-stats">
                 Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
-                Précision : <strong id="final-accuracy">0%</strong>
+                (Munitions restantes : <span id="final-remaining">0</span>)
             </div>
+
+            <div class="gauge-container">
+                <div id="gauge-fill" class="gauge-fill"></div>
+                <div class="gauge-tick" style="left: 27%;"></div> 
+                <div class="gauge-tick" style="left: 55%;"></div> 
+                <div class="gauge-tick" style="left: 83%;"></div> 
+            </div>
+
+            <div style="position: relative; height: 40px; width: 100%;">
+                <div class="tick-label" style="left: 0%">50</div>
+                <div class="tick-label" style="left: 27%">40</div>
+                <div class="tick-label" style="left: 55%">30</div>
+                <div class="tick-label" style="left: 83%">20</div>
+                <div class="tick-label" style="left: 100%">14</div>
+            </div>
+
             <div>
                 <div class="rank-label">Votre Rang</div>
                 <div id="final-rank" class="victory-rank">MATELOT</div>
                 <div id="final-comment" style="font-style: italic; font-size: 0.9em; margin-top:5px; color:#666;"></div>
             </div>
             <button class="btn-replay" onclick="location.reload()">Rejouer une partie</button>
+        </div>
+    </div>
+
+    <div id="defeatModal" class="modal-overlay">
+        <div class="modal-content" style="border: 4px solid #333;">
+            <div class="victory-icon">☠️</div>
+            <h2 class="defeat-title">GAME OVER</h2>
+            <div class="victory-stats">
+                Vous n'avez plus de munitions !<br>
+                La flotte ennemie a gagné.
+            </div>
+            <button class="btn-replay" style="background-color: #d32f2f;" onclick="location.reload()">Réessayer</button>
         </div>
     </div>
 
@@ -253,7 +304,7 @@
 
         <div class="controls">
             <div class="score-box">
-                Coups tirés : <span id="score-val" class="score-number">0</span>
+                Munitions : <span id="ammo-val" class="score-number">50</span>
             </div>
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
@@ -276,7 +327,7 @@
                 <button class="btn-nav" onclick="changerValeur('inputY', 1)">+</button>
             </div>
 
-            <button class="btn-feu" onclick="tirer()">FEU !</button>
+            <button class="btn-feu" id="btn-fire" onclick="tirer()">FEU !</button>
             <div id="info-msg">En attente de tir...</div>
         </div>
     </div>
@@ -284,7 +335,7 @@
     <div class="footer">
         <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
-        <a href="https://github.com/Raph81212/bataille-navale">Voir le code sur GitHub</a>
+        <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
     </div>
 
     <script>
@@ -294,10 +345,14 @@
         const ECHELLE = 40;
         const CENTRE_X = 200;
         const CENTRE_Y = 200;
+        const MAX_MUNITIONS = 50; 
+        const MIN_COUPS = 14;
 
         let grille = [];
         let flotte = {};
-        let nbCoups = 0;
+        let nbCoupsTires = 0; 
+        let munitionsRestantes = MAX_MUNITIONS;
+        let jeuFini = false;
 
         const typesBateaux = [
             {nom: "Porte-Avions", taille: 5},
@@ -371,12 +426,10 @@
             }
         }
 
-        // --- PARTIE 1 : DESSIN DE LA GRILLE (FOND) ---
         function dessinerGrille() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 400, 400);
 
-            // Grille légère
             ctx.strokeStyle = "lightgrey";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -387,32 +440,22 @@
             }
             ctx.stroke();
 
-            // AXES NOIRS
             ctx.strokeStyle = "black";
             ctx.fillStyle = "black";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            
-            // Axe Y
             ctx.moveTo(CENTRE_X, 400); ctx.lineTo(CENTRE_X, 0); 
             ctx.moveTo(CENTRE_X - 5, 10); ctx.lineTo(CENTRE_X, 0); ctx.lineTo(CENTRE_X + 5, 10);
-
-            // Axe X
             ctx.moveTo(0, CENTRE_Y); ctx.lineTo(400, CENTRE_Y); 
             ctx.moveTo(390, CENTRE_Y - 5); ctx.lineTo(400, CENTRE_Y); ctx.lineTo(390, CENTRE_Y + 5);
-            
             ctx.stroke();
         }
 
-        // --- PARTIE 2 : DESSIN DES CHIFFRES (AU DESSUS) ---
         function dessinerChiffres() {
             ctx.fillStyle = "black";
-            // MODIF : Taille augmentée pour les labels X et Y
             ctx.font = "bold 16px Arial";
             ctx.fillText("y", CENTRE_X + 10, 15);
             ctx.fillText("x", 385, CENTRE_Y - 15);
-
-            // MODIF : Taille augmentée pour les chiffres
             ctx.font = "13px Arial";
             for(let i = -4; i <= 4; i++) {
                 if(i === 0) {
@@ -421,7 +464,6 @@
                 }
                 let px = CENTRE_X + (i * ECHELLE);
                 let py = CENTRE_Y - (i * ECHELLE);
-                
                 ctx.fillText(i, px - 3, CENTRE_Y + 15);
                 ctx.fillText(i, CENTRE_X - 18, py + 4);
             }
@@ -429,30 +471,22 @@
 
         let historiqueTirs = []; 
 
-        // --- FONCTION PRINCIPALE DE DESSIN ---
         function redessinerTout() {
             ctx.clearRect(0, 0, 400, 400);
-            
-            // 1. On dessine la grille
             dessinerGrille();
-            
-            // 2. On dessine les tirs
             historiqueTirs.forEach(tir => {
                 let px = CENTRE_X + (tir.x * ECHELLE);
                 let py = CENTRE_Y - (tir.y * ECHELLE);
-                
                 if(tir === historiqueTirs[historiqueTirs.length - 1]) {
                     ctx.beginPath();
                     ctx.setLineDash([4, 4]);
                     ctx.lineWidth = 2;
-                    // MODIF : Couleur rouge avec transparence (0.6)
                     ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
                     ctx.moveTo(px, py); ctx.lineTo(px, CENTRE_Y);
                     ctx.moveTo(px, py); ctx.lineTo(CENTRE_X, py);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 }
-
                 ctx.beginPath();
                 ctx.arc(px, py, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = tir.couleur;
@@ -461,17 +495,16 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
             });
-
-            // 3. EN TOUT DERNIER : On redessine les chiffres
             dessinerChiffres();
         }
 
-        // --- 3. JEU ---
         function tirer() {
+            if (jeuFini) return;
+
             let info = document.getElementById('info-msg');
             let inputX = document.getElementById('inputX');
             let inputY = document.getElementById('inputY');
-            let scoreDisplay = document.getElementById('score-val');
+            let ammoDisplay = document.getElementById('ammo-val');
 
             let x = parseInt(inputX.value);
             let y = parseInt(inputY.value);
@@ -487,18 +520,24 @@
                 return;
             }
 
+            munitionsRestantes--;
+            nbCoupsTires++;
+            ammoDisplay.innerText = munitionsRestantes;
+
+            if (munitionsRestantes <= 10) {
+                ammoDisplay.classList.add('low-ammo');
+            }
+
             let col = x + 4;
             let lig = 4 - y;
             let val = grille[lig][col];
 
             if(val >= 2) {
                 info.style.color = "blue";
-                info.innerText = `Déjà visé (${x}, ${y})`;
+                info.innerText = `Déjà visé (${x}, ${y}) ! Munition perdue.`;
+                verifierDefaite();
                 return;
             }
-
-            nbCoups++;
-            scoreDisplay.innerText = nbCoups;
 
             if(val === 0) { // EAU
                 grille[lig][col] = 2;
@@ -532,7 +571,10 @@
                     document.getElementById('ship-' + nomCoule.replace(' ', '-')).classList.add('sunk');
 
                     if(Object.keys(flotte).length === 0) {
+                        jeuFini = true;
                         afficherVictoire();
+                        redessinerTout();
+                        return; 
                     }
                 } else {
                     info.style.color = "red";
@@ -541,39 +583,49 @@
             }
 
             redessinerTout();
+            verifierDefaite();
+        }
+
+        function verifierDefaite() {
+            if (munitionsRestantes <= 0 && !jeuFini) {
+                jeuFini = true;
+                document.getElementById('btn-fire').disabled = true;
+                setTimeout(() => {
+                    document.getElementById('defeatModal').style.display = 'flex';
+                }, 500);
+            }
         }
 
         function afficherVictoire() {
-            const perfection = 14;
-            let precision = Math.round((perfection / nbCoups) * 100);
-            
-            document.getElementById('final-shots').innerText = nbCoups;
-            document.getElementById('final-accuracy').innerText = precision + "%";
+            document.getElementById('final-shots').innerText = nbCoupsTires;
+            document.getElementById('final-remaining').innerText = munitionsRestantes;
+
+            let largeurJauge = 0;
+            if(nbCoupsTires <= MAX_MUNITIONS) {
+                largeurJauge = ((MAX_MUNITIONS - nbCoupsTires) / (MAX_MUNITIONS - MIN_COUPS)) * 100;
+                largeurJauge = Math.max(0, Math.min(100, largeurJauge));
+            }
 
             let rangTitre = "";
             let rangCom = "";
             let rangColor = "";
 
-            if (precision === 100) {
+            if (nbCoupsTires <= 15) {
                 rangTitre = "LÉGENDE VIVANTE";
                 rangCom = "Incroyable ! Vous lisez dans les pensées ?";
-                rangColor = "#FFD700";
-            } else if (precision > 50) { 
+                rangColor = "#4CAF50"; 
+            } else if (nbCoupsTires <= 28) {
                 rangTitre = "GRAND AMIRAL";
                 rangCom = "Une stratégie militaire impitoyable.";
-                rangColor = "#FFD700";
-            } else if (precision > 30) { 
+                rangColor = "#4CAF50";
+            } else if (nbCoupsTires <= 40) {
                 rangTitre = "CAPITAINE AVISÉ";
                 rangCom = "Bien joué ! Vous maîtrisez le repère.";
-                rangColor = "#C0C0C0"; 
-            } else if (precision > 20) { 
-                rangTitre = "MATELOT DÉBROUILLARD";
-                rangCom = "Victoire validée, mais attention aux munitions !";
-                rangColor = "#CD7F32"; 
+                rangColor = "#ffc107";
             } else {
-                rangTitre = "MOUSSAILLON DU DIMANCHE";
-                rangCom = "Gagné par la force du hasard (et beaucoup de patience).";
-                rangColor = "#333";
+                rangTitre = "MATELOT DÉBROUILLARD";
+                rangCom = "Victoire validée, mais c'était tout juste !";
+                rangColor = "#ff4d4d"; 
             }
 
             const elRank = document.getElementById('final-rank');
@@ -582,9 +634,13 @@
             document.getElementById('final-comment').innerText = rangCom;
 
             document.getElementById('victoryModal').style.display = 'flex';
+            
+            const gauge = document.getElementById('gauge-fill');
+            setTimeout(() => {
+                gauge.style.width = largeurJauge + "%";
+            }, 100);
         }
 
-        // Premier dessin
         dessinerGrille();
         dessinerChiffres();
 
