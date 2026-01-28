@@ -9,17 +9,22 @@ import webbrowser
 
 grille = []
 flotte = {}
+nb_coups = 0  # Nouveau compteur
+
 canvas = None
 entree_x = None
 entree_y = None
 label_info = None
+label_score = None # Nouveau label pour afficher le score
 fenetre_principale = None
 labels_bateaux = {} 
 
 def init_jeu():
-    global grille, flotte
+    global grille, flotte, nb_coups
     grille = []
     flotte = {}
+    nb_coups = 0
+    
     # Grille 9x9 vide
     for ligne in range(9):
         grille.append([0] * 9)
@@ -79,7 +84,6 @@ def dessiner_point(x, y, couleur):
                        fill=couleur, outline="black")
 
 def changer_valeur(entree, delta):
-    """Fonction pour augmenter ou diminuer la valeur d'une entrée"""
     try:
         valeur_actuelle = int(entree.get())
     except ValueError:
@@ -87,12 +91,24 @@ def changer_valeur(entree, delta):
     
     nouvelle_valeur = valeur_actuelle + delta
     
-    # On bloque entre -4 et 4
     if -4 <= nouvelle_valeur <= 4:
         entree.delete(0, tk.END)
         entree.insert(0, str(nouvelle_valeur))
 
+def determiner_rang(precision):
+    if precision == 100:
+        return "LÉGENDE VIVANTE", "Incroyable ! Vous lisez dans les pensées ?"
+    elif precision > 50:
+        return "GRAND AMIRAL", "Une stratégie militaire impitoyable."
+    elif precision > 30:
+        return "CAPITAINE AVISÉ", "Bien joué ! Vous maîtrisez le repère."
+    elif precision > 20:
+        return "MATELOT DÉBROUILLARD", "Victoire validée, mais attention aux munitions !"
+    else:
+        return "MOUSSAILLON DU DIMANCHE", "Gagné par la force du hasard..."
+
 def tirer():
+    global nb_coups
     try:
         x_saisi = int(entree_x.get())
         y_saisi = int(entree_y.get())
@@ -107,6 +123,14 @@ def tirer():
     colonne = x_saisi + 4
     ligne = 4 - y_saisi
     valeur = grille[ligne][colonne]
+
+    if valeur >= 2:
+        label_info.config(text=f"Vous avez déjà visé le point ({x_saisi}, {y_saisi})", fg="blue")
+        return
+
+    # Si tir valide (eau ou touché), on incrémente le compteur
+    nb_coups += 1
+    label_score.config(text=f"Coups tirés : {nb_coups}")
 
     if valeur == 0: # EAU
         grille[ligne][colonne] = 2
@@ -133,30 +157,34 @@ def tirer():
                 labels_bateaux[nom_coule].config(fg="grey", font=("Arial", 10, "overstrike"))
             
             if not flotte:
-                messagebox.showinfo("Victoire !", "Félicitations Capitaine ! Toute la flotte est coulée !")
+                # VICTOIRE
+                perfection = 14
+                precision = round((perfection / nb_coups) * 100)
+                titre_rang, commentaire = determiner_rang(precision)
+                
+                msg = (f"Félicitations Capitaine !\n\n"
+                       f"Flotte coulée en {nb_coups} coups.\n"
+                       f"Précision : {precision}%\n\n"
+                       f"RANG : {titre_rang}\n"
+                       f"\"{commentaire}\"")
+                
+                messagebox.showinfo("VICTOIRE !", msg)
                 fenetre_principale.quit()
         else:
             label_info.config(text="BOUM ! Touché !", fg="red")
-
-    elif valeur >= 2:
-        label_info.config(text=f"Vous avez déjà visé le point ({x_saisi}, {y_saisi})", fg="blue")
-    
-    # On ne vide plus les entrées pour faciliter les tirs proches, 
-    # ou on peut les remettre à 0 si tu préfères. Ici je laisse la valeur.
 
 # ==============================================================================
 # 3. CONSTRUCTION DES INTERFACES
 # ==============================================================================
 
 def ouvrir_lien(event):
-    # Changement URL
     webbrowser.open("https://github.com/Raph81212/bataille-navale")
 
 def lancer_le_jeu(frame_menu_a_detruire):
     frame_menu_a_detruire.destroy()
     fenetre_principale.configure(bg="#f0f0f0")
 
-    global canvas, entree_x, entree_y, label_info, labels_bateaux
+    global canvas, entree_x, entree_y, label_info, labels_bateaux, label_score
 
     # --- Cadre Gauche : Le Repère ---
     frame_graph = tk.Frame(fenetre_principale, padx=10, pady=10)
@@ -190,6 +218,12 @@ def lancer_le_jeu(frame_menu_a_detruire):
     frame_commandes = tk.Frame(fenetre_principale, padx=20)
     frame_commandes.pack(side=tk.RIGHT)
 
+    # NOUVEAU : Affichage du Score
+    frame_score = tk.Frame(frame_commandes, bg="#333", padx=10, pady=5)
+    frame_score.pack(pady=(0, 20), fill="x")
+    label_score = tk.Label(frame_score, text="Coups tirés : 0", font=("Arial", 12, "bold"), bg="#333", fg="#4CAF50")
+    label_score.pack()
+
     tk.Label(frame_commandes, text="🎯 CIBLES :", font=("Arial", 10, "bold"), 
              bg="#f0f0f0").pack(pady=(0, 5), anchor="w")
 
@@ -208,46 +242,35 @@ def lancer_le_jeu(frame_menu_a_detruire):
 
     tk.Label(frame_commandes, text="Coordonnées de tir", font=("Arial", 14, "bold")).pack(pady=10)
 
-    # --- NOUVEAU SYSTÈME DE SAISIE X (Boutons +/-) ---
+    # SAISIE X
     frame_x = tk.Frame(frame_commandes, bg="#f0f0f0")
     frame_x.pack(pady=5)
-    
     tk.Label(frame_x, text="x : ", font=("Arial", 12, "bold"), bg="#f0f0f0").pack(side=tk.LEFT)
-    
-    # On crée l'entrée d'abord pour pouvoir la référencer dans les boutons
     entree_x = tk.Entry(frame_x, width=4, font=("Arial", 12), justify='center')
-    entree_x.insert(0, "0") # Valeur par défaut
-    
+    entree_x.insert(0, "0") 
     btn_x_moins = tk.Button(frame_x, text="-", font=("Arial", 10, "bold"), width=3,
                             command=lambda: changer_valeur(entree_x, -1))
     btn_x_plus = tk.Button(frame_x, text="+", font=("Arial", 10, "bold"), width=3,
                            command=lambda: changer_valeur(entree_x, 1))
-
-    # On affiche dans l'ordre : Bouton Moins | Entrée | Bouton Plus
     btn_x_moins.pack(side=tk.LEFT, padx=5)
     entree_x.pack(side=tk.LEFT)
     btn_x_plus.pack(side=tk.LEFT, padx=5)
 
-    # --- NOUVEAU SYSTÈME DE SAISIE Y (Boutons +/-) ---
+    # SAISIE Y
     frame_y = tk.Frame(frame_commandes, bg="#f0f0f0")
     frame_y.pack(pady=5)
-    
     tk.Label(frame_y, text="y : ", font=("Arial", 12, "bold"), bg="#f0f0f0").pack(side=tk.LEFT)
-    
     entree_y = tk.Entry(frame_y, width=4, font=("Arial", 12), justify='center')
     entree_y.insert(0, "0") 
-    
     btn_y_moins = tk.Button(frame_y, text="-", font=("Arial", 10, "bold"), width=3,
                             command=lambda: changer_valeur(entree_y, -1))
     btn_y_plus = tk.Button(frame_y, text="+", font=("Arial", 10, "bold"), width=3,
                            command=lambda: changer_valeur(entree_y, 1))
-
     btn_y_moins.pack(side=tk.LEFT, padx=5)
     entree_y.pack(side=tk.LEFT)
     btn_y_plus.pack(side=tk.LEFT, padx=5)
 
 
-    # Bouton FEU
     btn_feu = tk.Button(frame_commandes, text="FEU !", font=("Arial", 12, "bold"), 
                         bg="#d32f2f", fg="white", activebackground="#b71c1c", cursor="hand2",
                         command=tirer, relief=tk.FLAT, borderwidth=0)
@@ -261,38 +284,31 @@ def afficher_menu():
     frame_menu = tk.Frame(fenetre_principale, bg="white")
     frame_menu.pack(fill="both", expand=True)
 
-    # 1. Le Titre
     tk.Label(frame_menu, text="Bataille Navale Relative", font=("Helvetica", 26, "bold"), 
              bg="white", fg="#333333").pack(pady=(50, 10))
 
-    # (Nom retiré d'ici)
-
-    # 3. Le Descriptif
     description = (
         "Bienvenue Capitaine !\n\n"
         "La flotte ennemie est cachée dans le brouillard.\n"
         "Votre mission est de la détruire en utilisant le repère cartésien.\n\n"
-        "Entrez les coordonnées x (abscisse) et y (ordonnée)\n"
-        "pour lancer vos torpilles."
+        "Tentez d'obtenir le rang de 'Grand Amiral'\n"
+        "en utilisant le moins de coups possible !"
     )
     
     tk.Label(frame_menu, text=description, font=("Helvetica", 12), bg="white", 
              justify="center", wraplength=550).pack(pady=20)
 
-    # 4. Le Bouton JOUER
     btn_jouer = tk.Button(frame_menu, text="JOUER", font=("Helvetica", 16, "bold"),
                           bg="#d32f2f", fg="white", activebackground="#b71c1c",
                           relief=tk.FLAT, borderwidth=0, padx=30, pady=10, cursor="hand2",
                           command=lambda: lancer_le_jeu(frame_menu))
     btn_jouer.pack(pady=30)
 
-    # 5. Le Lien GitHub (URL mise à jour)
     lien_github = tk.Label(frame_menu, text="https://github.com/Raph81212/bataille-navale", 
                            font=("Helvetica", 10, "underline"), bg="white", fg="blue", cursor="hand2")
     lien_github.pack(pady=5)
     lien_github.bind("<Button-1>", ouvrir_lien)
 
-    # 6. La Licence + Ton NOM en bas
     texte_footer = "Raphaël CHAILLIÉ - Licence libre copyleft (ɔ)"
     tk.Label(frame_menu, text=texte_footer, font=("Helvetica", 9), 
              bg="white", fg="#999999").pack(side=tk.BOTTOM, pady=10)

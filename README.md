@@ -17,7 +17,7 @@ Pas besoin d'installation ! Le jeu est disponible directement dans votre navigat
 
 **Bataille Navale Relative** revisite le célèbre jeu de société en y intégrant une dimension mathématique. Au lieu des classiques "A1, B2", le joueur doit utiliser des **coordonnées relatives (x, y)** comprises entre **-4 et 4**.
 
-L'objectif est de travaillé la compétence "se repérer sur une droite graduée, dans le plan muni d'un repère orthogonal".
+L'objectif est pédagogique et ludique : aider à visualiser et comprendre le fonctionnement d'un repère orthonormé (abscisses et ordonnées) tout en s'amusant.
 
 ### ✨ Fonctionnalités
 * **Repère Cartésien :** Grille centrée sur (0,0) avec axes x et y visibles.
@@ -90,3 +90,4 @@ Ce projet contient deux versions du jeu :
 * Licence : Copyleft (ɔ) - Vous êtes libre de partager et modifier ce code.
 
 ---
+*Fait avec ❤️ et des maths.*
