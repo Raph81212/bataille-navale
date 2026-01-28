@@ -54,7 +54,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .score-number { font-size: 1.5em; font-weight: bold; color: #4CAF50; transition: color 0.3s; }
-        /* Classe pour quand les munitions sont basses */
         .low-ammo { color: #ff3333 !important; animation: pulse 1s infinite; }
 
         @keyframes pulse {
@@ -141,7 +140,7 @@
         .author-name { font-weight: bold; font-size: 1.1em; color: #333; }
         a { color: #d32f2f; text-decoration: none; }
 
-        /* --- MODALES (VICTOIRE & DÉFAITE) --- */
+        /* --- MODALES --- */
         .modal-overlay {
             display: none; 
             position: fixed;
@@ -171,44 +170,56 @@
 
         .victory-icon { font-size: 60px; margin-bottom: 10px; }
         .victory-title { color: #d32f2f; margin: 10px 0; font-size: 2em; }
-        .defeat-title { color: #333; margin: 10px 0; font-size: 2em; } /* Titre défaite */
+        .defeat-title { color: #333; margin: 10px 0; font-size: 2em; }
         
         .victory-stats { font-size: 1.2em; margin: 10px 0; color: #555; line-height: 1.5; }
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
 
-        /* JAUGE DE SCORE */
+        /* --- NOUVELLE JAUGE GRADUÉE --- */
         .gauge-container {
             position: relative;
             width: 100%;
-            height: 25px;
-            background-color: #e0e0e0;
+            height: 30px; /* Un peu plus épais */
+            background-color: #ddd; /* Gris si vide */
             border-radius: 15px;
             margin: 20px 0;
             overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .gauge-fill {
             height: 100%;
             width: 0%;
-            background-color: #4CAF50;
+            /* Dégradé de rouge (mauvais) à vert (bon) */
+            background: linear-gradient(90deg, #ff4d4d 0%, #ffc107 50%, #4CAF50 100%);
             border-radius: 15px 0 0 15px;
             transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+        
+        /* Petit effet de brillance sur la barre */
+        .gauge-fill::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 50%;
+            background: rgba(255,255,255,0.2);
         }
 
+        /* Les traits de repère */
         .gauge-tick {
             position: absolute;
             top: 0; bottom: 0;
             width: 2px;
-            background-color: rgba(255,255,255,0.8);
+            background-color: rgba(255,255,255,0.6);
             z-index: 2;
         }
         .tick-label {
             position: absolute;
-            top: 28px;
-            font-size: 0.7em;
-            color: #999;
+            top: 32px; /* Sous la barre */
+            font-size: 0.8em;
+            color: #777;
+            font-weight: bold;
             transform: translateX(-50%);
         }
 
@@ -221,7 +232,7 @@
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            margin-top: 30px;
+            margin-top: 40px;
             transition: transform 0.2s;
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
@@ -246,25 +257,24 @@
             <h2 class="victory-title">VICTOIRE !</h2>
             
             <div class="victory-stats">
-                Flotte coulée !<br>
-                Munitions restantes : <strong id="final-remaining">0</strong>
+                Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
+                (Munitions restantes : <span id="final-remaining">0</span>)
             </div>
 
             <div class="gauge-container">
                 <div id="gauge-fill" class="gauge-fill"></div>
-                <div class="gauge-tick" style="left: 20%;"></div>
-                <div class="gauge-tick" style="left: 30%;"></div>
-                <div class="gauge-tick" style="left: 50%;"></div>
-            </div>
+                <div class="gauge-tick" style="left: 27%;"></div> <div class="gauge-tick" style="left: 55%;"></div> <div class="gauge-tick" style="left: 83%;"></div> </div>
+
             <div style="position: relative; height: 15px; width: 100%;">
-                <div class="tick-label" style="left: 20%">20%</div>
-                <div class="tick-label" style="left: 30%">30%</div>
-                <div class="tick-label" style="left: 50%">50%</div>
-                <div class="tick-label" style="left: 95%">100%</div>
+                <div class="tick-label" style="left: 0%">50</div>
+                <div class="tick-label" style="left: 27%">40</div>
+                <div class="tick-label" style="left: 55%">30</div>
+                <div class="tick-label" style="left: 83%">20</div>
+                <div class="tick-label" style="left: 100%">14</div>
             </div>
 
             <div>
-                <div class="rank-label">Votre Rang</div>
+                <div class="rank-label" style="margin-top: 15px;">Votre Rang</div>
                 <div id="final-rank" class="victory-rank">MATELOT</div>
                 <div id="final-comment" style="font-style: italic; font-size: 0.9em; margin-top:5px; color:#666;"></div>
             </div>
@@ -334,11 +344,12 @@
         const ECHELLE = 40;
         const CENTRE_X = 200;
         const CENTRE_Y = 200;
-        const MAX_MUNITIONS = 50; // Nombre de coups max
+        const MAX_MUNITIONS = 50; 
+        const MIN_COUPS = 14; // Le score parfait
 
         let grille = [];
         let flotte = {};
-        let nbCoupsTires = 0; // Pour calculer le pourcentage à la fin
+        let nbCoupsTires = 0; 
         let munitionsRestantes = MAX_MUNITIONS;
         let jeuFini = false;
 
@@ -486,7 +497,6 @@
             dessinerChiffres();
         }
 
-        // --- JEU ---
         function tirer() {
             if (jeuFini) return;
 
@@ -509,12 +519,10 @@
                 return;
             }
 
-            // 1. GESTION DES MUNITIONS
             munitionsRestantes--;
             nbCoupsTires++;
             ammoDisplay.innerText = munitionsRestantes;
 
-            // Alerte visuelle si munitions basses
             if (munitionsRestantes <= 10) {
                 ammoDisplay.classList.add('low-ammo');
             }
@@ -523,7 +531,6 @@
             let lig = 4 - y;
             let val = grille[lig][col];
 
-            // 2. Si déjà visé (Pénalité : munition perdue quand même)
             if(val >= 2) {
                 info.style.color = "blue";
                 info.innerText = `Déjà visé (${x}, ${y}) ! Munition perdue.`;
@@ -566,7 +573,7 @@
                         jeuFini = true;
                         afficherVictoire();
                         redessinerTout();
-                        return; // On sort pour ne pas déclencher la défaite
+                        return; 
                     }
                 } else {
                     info.style.color = "red";
@@ -589,36 +596,40 @@
         }
 
         function afficherVictoire() {
-            const perfection = 14;
-            // Calcul de précision toujours basé sur le nombre de coups tirés
-            let precision = Math.round((perfection / nbCoupsTires) * 100);
-            
+            document.getElementById('final-shots').innerText = nbCoupsTires;
             document.getElementById('final-remaining').innerText = munitionsRestantes;
 
+            // Logique de calcul pour la jauge
+            // Min : 14 (100%), Max : 50 (0%)
+            let largeurJauge = 0;
+            // Formule inversée : plus on est proche de 14, plus c'est rempli
+            if(nbCoupsTires <= MAX_MUNITIONS) {
+                largeurJauge = ((MAX_MUNITIONS - nbCoupsTires) / (MAX_MUNITIONS - MIN_COUPS)) * 100;
+                // On s'assure que ça ne dépasse pas 100 ni ne descend sous 0
+                largeurJauge = Math.max(0, Math.min(100, largeurJauge));
+            }
+
+            // Calcul du rang
             let rangTitre = "";
             let rangCom = "";
             let rangColor = "";
 
-            if (precision === 100) {
+            if (nbCoupsTires <= 15) {
                 rangTitre = "LÉGENDE VIVANTE";
                 rangCom = "Incroyable ! Vous lisez dans les pensées ?";
-                rangColor = "#FFD700";
-            } else if (precision > 50) { 
+                rangColor = "#4CAF50"; // Vert pur
+            } else if (nbCoupsTires <= 28) {
                 rangTitre = "GRAND AMIRAL";
                 rangCom = "Une stratégie militaire impitoyable.";
-                rangColor = "#FFD700";
-            } else if (precision > 30) { 
+                rangColor = "#4CAF50";
+            } else if (nbCoupsTires <= 40) {
                 rangTitre = "CAPITAINE AVISÉ";
                 rangCom = "Bien joué ! Vous maîtrisez le repère.";
-                rangColor = "#C0C0C0"; 
-            } else if (precision > 20) { 
-                rangTitre = "MATELOT DÉBROUILLARD";
-                rangCom = "Victoire validée, mais c'était juste !";
-                rangColor = "#CD7F32"; 
+                rangColor = "#ffc107"; // Jaune
             } else {
-                rangTitre = "MOUSSAILLON DU DIMANCHE";
-                rangCom = "Gagné... mais vous avez failli couler par manque de munitions !";
-                rangColor = "#333";
+                rangTitre = "MATELOT DÉBROUILLARD";
+                rangCom = "Victoire validée, mais c'était tout juste !";
+                rangColor = "#ff4d4d"; // Rouge
             }
 
             const elRank = document.getElementById('final-rank');
@@ -629,10 +640,8 @@
             document.getElementById('victoryModal').style.display = 'flex';
             
             const gauge = document.getElementById('gauge-fill');
-            gauge.style.backgroundColor = rangColor;
-            
             setTimeout(() => {
-                gauge.style.width = precision + "%";
+                gauge.style.width = largeurJauge + "%";
             }, 100);
         }
 
