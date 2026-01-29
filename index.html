@@ -195,23 +195,20 @@
             position: relative;
             width: 100%;
             height: 30px;
-            /* Le fond est le dégradé COMPLET fixe */
-            background: linear-gradient(90deg, #ff4d4d 0%, #ffc107 45%, #4CAF50 100%);
+            background: linear-gradient(90deg, #ff4d4d 0%, #ff4d4d 25%, #ffc107 25%, #ffc107 50%, #4CAF50 50%, #4CAF50 100%);
             border-radius: 15px;
             margin: 20px 0 0 0;
             overflow: hidden;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        /* C'est ce masque gris qui va reculer pour révéler la couleur */
         .gauge-mask {
             position: absolute;
-            top: 0;
-            right: 0; /* Collé à droite */
+            top: 0; right: 0;
             height: 100%;
-            width: 100%; /* Au début, il cache tout */
-            background-color: #ddd; /* Couleur "vide" */
-            border-left: 1px solid rgba(255,255,255,0.5); /* Petit effet de bord */
+            width: 100%;
+            background-color: #ddd; 
+            border-left: 1px solid rgba(255,255,255,0.5);
             transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
             z-index: 1;
         }
@@ -220,8 +217,8 @@
             position: absolute;
             top: 0; bottom: 0;
             width: 2px;
-            background-color: rgba(255,255,255,0.6);
-            z-index: 2; /* Au dessus du masque */
+            background-color: rgba(255,255,255,0.8);
+            z-index: 2;
         }
         
         .tick-label {
@@ -266,23 +263,19 @@
             <h2 class="victory-title">VICTOIRE !</h2>
             
             <div class="victory-stats">
-                Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
                 Munitions restantes : <strong id="final-remaining" style="color:#4CAF50">0</strong> / 60
             </div>
 
             <div class="gauge-container">
                 <div id="gauge-mask" class="gauge-mask"></div>
-                
                 <div class="gauge-tick" style="left: 25%;"></div> 
                 <div class="gauge-tick" style="left: 50%;"></div> 
-                <div class="gauge-tick" style="left: 75%;"></div> 
             </div>
 
             <div style="position: relative; height: 40px; width: 100%;">
                 <div class="tick-label" style="left: 0%">0</div>
                 <div class="tick-label" style="left: 25%">15</div>
                 <div class="tick-label" style="left: 50%">30</div>
-                <div class="tick-label" style="left: 75%">45</div>
                 <div class="tick-label" style="left: 100%">60</div>
             </div>
 
@@ -609,7 +602,7 @@
             }
         }
 
-        // --- FONCTION DE TRICHE (BYPASS) ---
+        // --- FONCTION DE TRICHE ---
         function testVictoire() {
             let coupsAleatoires = Math.floor(Math.random() * (50 - 14 + 1)) + 14;
             nbCoupsTires = coupsAleatoires;
@@ -618,30 +611,23 @@
         }
 
         function afficherVictoire() {
-            document.getElementById('final-shots').innerText = nbCoupsTires;
             document.getElementById('final-remaining').innerText = munitionsRestantes;
 
-            // Pourcentage de remplissage : % de munitions restantes
             let pourcentageRestant = (munitionsRestantes / MAX_MUNITIONS) * 100;
-            // Pourcentage à cacher (largeur du masque) : 100 - % restant
             let pourcentageMasque = 100 - pourcentageRestant;
             
             let rangTitre = "";
             let rangCom = "";
             let rangColor = "";
 
-            if (nbCoupsTires <= 35) { 
+            if (munitionsRestantes >= 30) { 
                 rangTitre = "LÉGENDE VIVANTE";
                 rangCom = "Une stratégie militaire parfaite !";
                 rangColor = "#4CAF50"; 
-            } else if (nbCoupsTires <= 45) { 
+            } else if (munitionsRestantes >= 15) { 
                 rangTitre = "GRAND AMIRAL";
                 rangCom = "Très belle logique, félicitations.";
                 rangColor = "#ffc107"; 
-            } else if (nbCoupsTires <= 55) { 
-                rangTitre = "CAPITAINE AVISÉ";
-                rangCom = "Victoire validée !";
-                rangColor = "#ff9800"; 
             } else {
                 rangTitre = "MATELOT DÉBROUILLARD";
                 rangCom = "C'était juste, attention aux munitions !";
@@ -655,7 +641,6 @@
 
             document.getElementById('victoryModal').style.display = 'flex';
             
-            // On anime la largeur du masque
             const mask = document.getElementById('gauge-mask');
             setTimeout(() => {
                 mask.style.width = pourcentageMasque + "%";
