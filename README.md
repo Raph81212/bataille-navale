@@ -34,16 +34,15 @@ L'objectif est pédagogique et ludique : aider à visualiser et comprendre le fo
 
 ## 🏆 Système de Score
 
-Le jeu récompense la réflexion. Moins vous utilisez de coups, plus votre rang sera élevé !
-Le score est basé sur votre **précision** (Nombre de touches / Nombre de coups).
+Le jeu récompense votre efficacité. Plus il vous reste de munitions à la fin de la partie, plus votre grade est élevé ! Sur un total de **60 munitions**, visez la performance maximale.
 
-| Précision | Grade obtenu |
+| Munitions restantes | Grade obtenu |
 | :--- | :--- |
-| **100%** | 🌟 Légende Vivante |
-| **> 50%** | 🏆 Grand Amiral |
-| **> 30%** | 🎖️ Capitaine Avisé |
-| **> 20%** | ⚓ Matelot Débrouillard |
-| **< 20%** | 🛟 Moussaillon du Dimanche |
+| **40 ou +** | 🌟 LÉGENDE VIVANTE |
+| **30 à 39** | 🏆 GRAND AMIRAL |
+| **20 à 29** | 🎖️ LIEUTENANT TACTICIEN |
+| **5 à 19** | ⚓ MATELOT DÉBROUILLARD |
+| **0 à 4** | 🛟 MOUSSAILLON DU DIMANCHE |
 
 ---
 
