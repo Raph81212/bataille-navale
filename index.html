@@ -126,6 +126,20 @@
         .btn-feu:hover { background-color: #b71c1c; }
         .btn-feu:disabled { background-color: #ccc; cursor: not-allowed; }
 
+        /* BOUTON TRICHE */
+        .btn-cheat {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            opacity: 0.5;
+        }
+        .btn-cheat:hover { opacity: 1; }
+
         #info-msg {
             margin-top: 20px;
             font-weight: bold;
@@ -176,33 +190,30 @@
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
 
-        /* --- JAUGE --- */
+        /* --- NOUVELLE LOGIQUE DE JAUGE (MASQUE INVERSÉ) --- */
         .gauge-container {
             position: relative;
             width: 100%;
             height: 30px;
-            background-color: #ddd;
+            /* Le fond est le dégradé COMPLET fixe */
+            background: linear-gradient(90deg, #ff4d4d 0%, #ffc107 45%, #4CAF50 100%);
             border-radius: 15px;
             margin: 20px 0 0 0;
             overflow: hidden;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .gauge-fill {
-            height: 100%;
-            width: 0%;
-            /* Dégradé ajusté : Rouge jusqu'à 50, Jaune vers 45, Vert vers 35 */
-            background: linear-gradient(90deg, #ff4d4d 0%, #ffc107 40%, #4CAF50 100%);
-            border-radius: 15px 0 0 15px;
-            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-            position: relative;
-        }
-        
-        .gauge-fill::after {
-            content: "";
+        /* C'est ce masque gris qui va reculer pour révéler la couleur */
+        .gauge-mask {
             position: absolute;
-            top: 0; left: 0; right: 0; height: 50%;
-            background: rgba(255,255,255,0.2);
+            top: 0;
+            right: 0; /* Collé à droite */
+            height: 100%;
+            width: 100%; /* Au début, il cache tout */
+            background-color: #ddd; /* Couleur "vide" */
+            border-left: 1px solid rgba(255,255,255,0.5); /* Petit effet de bord */
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 1;
         }
 
         .gauge-tick {
@@ -210,7 +221,7 @@
             top: 0; bottom: 0;
             width: 2px;
             background-color: rgba(255,255,255,0.6);
-            z-index: 2;
+            z-index: 2; /* Au dessus du masque */
         }
         
         .tick-label {
@@ -236,7 +247,6 @@
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
-        /* --- MOBILE --- */
         @media (max-width: 768px) {
             .game-container { flex-direction: column; align-items: center; padding: 10px; gap: 15px; }
             .controls { width: 100%; }
@@ -257,19 +267,23 @@
             
             <div class="victory-stats">
                 Flotte coulée en <strong id="final-shots">0</strong> coups.<br>
-                (Munitions restantes : <span id="final-remaining">0</span>)
+                Munitions restantes : <strong id="final-remaining" style="color:#4CAF50">0</strong> / 60
             </div>
 
             <div class="gauge-container">
-                <div id="gauge-fill" class="gauge-fill"></div>
-                <div class="gauge-tick" style="left: 16%;"></div> <div class="gauge-tick" style="left: 50%;"></div> <div class="gauge-tick" style="left: 83%;"></div> </div>
+                <div id="gauge-mask" class="gauge-mask"></div>
+                
+                <div class="gauge-tick" style="left: 25%;"></div> 
+                <div class="gauge-tick" style="left: 50%;"></div> 
+                <div class="gauge-tick" style="left: 75%;"></div> 
+            </div>
 
             <div style="position: relative; height: 40px; width: 100%;">
-                <div class="tick-label" style="left: 0%">60</div>
-                <div class="tick-label" style="left: 16%">55</div>
-                <div class="tick-label" style="left: 50%">45</div>
-                <div class="tick-label" style="left: 83%">35</div>
-                <div class="tick-label" style="left: 100%">25</div>
+                <div class="tick-label" style="left: 0%">0</div>
+                <div class="tick-label" style="left: 25%">15</div>
+                <div class="tick-label" style="left: 50%">30</div>
+                <div class="tick-label" style="left: 75%">45</div>
+                <div class="tick-label" style="left: 100%">60</div>
             </div>
 
             <div>
@@ -334,6 +348,8 @@
         <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
         <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
+        <br>
+        <button class="btn-cheat" onclick="testVictoire()">⚡ TEST VICTOIRE</button>
     </div>
 
     <script>
@@ -343,12 +359,7 @@
         const ECHELLE = 40;
         const CENTRE_X = 200;
         const CENTRE_Y = 200;
-        
-        // MODIFICATION : 60 munitions pour plus de réalisme
         const MAX_MUNITIONS = 60; 
-        
-        // CIBLE STRATEGIQUE : ~30 coups est considéré comme "parfait" (14 touches + 16 recherches)
-        const SCORE_OPTIMAL = 30; 
 
         let grille = [];
         let flotte = {};
@@ -598,39 +609,43 @@
             }
         }
 
+        // --- FONCTION DE TRICHE (BYPASS) ---
+        function testVictoire() {
+            let coupsAleatoires = Math.floor(Math.random() * (50 - 14 + 1)) + 14;
+            nbCoupsTires = coupsAleatoires;
+            munitionsRestantes = MAX_MUNITIONS - nbCoupsTires;
+            afficherVictoire();
+        }
+
         function afficherVictoire() {
             document.getElementById('final-shots').innerText = nbCoupsTires;
             document.getElementById('final-remaining').innerText = munitionsRestantes;
 
-            // Calcul de la jauge (Min 25 coups pour être plein, Max 60 coups pour être vide)
-            let largeurJauge = 0;
-            const BORNE_HAUTE = 25; // Score excellent
-            if(nbCoupsTires <= MAX_MUNITIONS) {
-                largeurJauge = ((MAX_MUNITIONS - nbCoupsTires) / (MAX_MUNITIONS - BORNE_HAUTE)) * 100;
-                largeurJauge = Math.max(0, Math.min(100, largeurJauge));
-            }
-
-            // NOUVEAUX PALIERS PLUS JUSTES
+            // Pourcentage de remplissage : % de munitions restantes
+            let pourcentageRestant = (munitionsRestantes / MAX_MUNITIONS) * 100;
+            // Pourcentage à cacher (largeur du masque) : 100 - % restant
+            let pourcentageMasque = 100 - pourcentageRestant;
+            
             let rangTitre = "";
             let rangCom = "";
             let rangColor = "";
 
-            if (nbCoupsTires <= 35) { // Moins de 35 coups = EXCELLENT
+            if (nbCoupsTires <= 35) { 
                 rangTitre = "LÉGENDE VIVANTE";
                 rangCom = "Une stratégie militaire parfaite !";
-                rangColor = "#4CAF50"; // Vert
-            } else if (nbCoupsTires <= 45) {
+                rangColor = "#4CAF50"; 
+            } else if (nbCoupsTires <= 45) { 
                 rangTitre = "GRAND AMIRAL";
                 rangCom = "Très belle logique, félicitations.";
-                rangColor = "#ffc107"; // Jaune/Or
-            } else if (nbCoupsTires <= 55) {
+                rangColor = "#ffc107"; 
+            } else if (nbCoupsTires <= 55) { 
                 rangTitre = "CAPITAINE AVISÉ";
                 rangCom = "Victoire validée !";
-                rangColor = "#ff9800"; // Orange
+                rangColor = "#ff9800"; 
             } else {
                 rangTitre = "MATELOT DÉBROUILLARD";
                 rangCom = "C'était juste, attention aux munitions !";
-                rangColor = "#ff4d4d"; // Rouge
+                rangColor = "#ff4d4d"; 
             }
 
             const elRank = document.getElementById('final-rank');
@@ -640,9 +655,10 @@
 
             document.getElementById('victoryModal').style.display = 'flex';
             
-            const gauge = document.getElementById('gauge-fill');
+            // On anime la largeur du masque
+            const mask = document.getElementById('gauge-mask');
             setTimeout(() => {
-                gauge.style.width = largeurJauge + "%";
+                mask.style.width = pourcentageMasque + "%";
             }, 100);
         }
 
