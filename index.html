@@ -332,9 +332,6 @@
         </div>
 
         <div class="controls">
-            <div class="score-box">
-                Munitions : <span id="ammo-val" class="score-number">60</span>
-            </div>
             
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
@@ -532,12 +529,6 @@
         }
 
         function mettreAJourAffichageMunitions() {
-            const ammoDisplay = document.getElementById('ammo-val');
-            ammoDisplay.innerText = munitionsRestantes;
-            if (munitionsRestantes <= 10) {
-                ammoDisplay.classList.add('low-ammo');
-            }
-
             const btnFire = document.getElementById('btn-fire');
             btnFire.innerText = `FEU ! (${munitionsRestantes})`;
             if (munitionsRestantes <= 10) {
