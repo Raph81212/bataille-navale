@@ -58,7 +58,7 @@
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
 
@@ -172,7 +172,7 @@
             border-radius: 15px;
             text-align: center;
             max-width: 90%;
-            width: 450px; 
+            width: 550px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             animation: popIn 0.3s ease-out;
         }
@@ -190,12 +190,24 @@
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
 
-        /* --- NOUVELLE LOGIQUE DE JAUGE (MASQUE INVERSÉ) --- */
+        /* --- JAUGE (5 ZONES) --- */
         .gauge-container {
             position: relative;
             width: 100%;
             height: 30px;
-            background: linear-gradient(90deg, #ff4d4d 0%, #ff4d4d 25%, #ffc107 25%, #ffc107 50%, #4CAF50 50%, #4CAF50 100%);
+            /* 0-5 : Rouge foncé (Moussaillon)
+               5-20 : Orange (Matelot)
+               20-30 : Jaune (Lieutenant)
+               30-40 : Vert clair (Grand Amiral)
+               40+ : Vert foncé (Légende)
+            */
+            background: linear-gradient(90deg, 
+                #d32f2f 0%, #d32f2f 8.3%,   
+                #ff9800 8.3%, #ff9800 33.3%, 
+                #ffc107 33.3%, #ffc107 50%,  
+                #8bc34a 50%, #8bc34a 66.6%,  
+                #4CAF50 66.6%, #4CAF50 100% 
+            );
             border-radius: 15px;
             margin: 20px 0 0 0;
             overflow: hidden;
@@ -221,6 +233,11 @@
             z-index: 2;
         }
         
+        .gauge-tick-danger {
+            background-color: rgba(255, 0, 0, 0.8);
+            width: 3px;
+        }
+
         .tick-label {
             position: absolute;
             top: 5px;
@@ -244,14 +261,16 @@
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
+        /* --- MOBILE --- */
         @media (max-width: 768px) {
             .game-container { flex-direction: column; align-items: center; padding: 10px; gap: 15px; }
             .controls { width: 100%; }
             h3, .input-group, .btn-feu, #info-msg { order: 1; }
-            .score-box { order: 2; margin-top: 20px; margin-bottom: 10px;}
+            .score-box { display: none; }
             .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
             .input-group { justify-content: center; } 
             canvas { width: 320px; height: 320px; }
+            .modal-content { width: 95%; padding: 20px; }
         }
     </style>
 </head>
@@ -268,14 +287,19 @@
 
             <div class="gauge-container">
                 <div id="gauge-mask" class="gauge-mask"></div>
-                <div class="gauge-tick" style="left: 25%;"></div> 
+                
+                <div class="gauge-tick gauge-tick-danger" style="left: 8.3%;"></div> 
+                <div class="gauge-tick" style="left: 33.3%;"></div> 
                 <div class="gauge-tick" style="left: 50%;"></div> 
+                <div class="gauge-tick" style="left: 66.6%;"></div> 
             </div>
 
             <div style="position: relative; height: 40px; width: 100%;">
                 <div class="tick-label" style="left: 0%">0</div>
-                <div class="tick-label" style="left: 25%">15</div>
+                <div class="tick-label" style="left: 8.3%; color:#d32f2f;">5</div>
+                <div class="tick-label" style="left: 33.3%">20</div>
                 <div class="tick-label" style="left: 50%">30</div>
+                <div class="tick-label" style="left: 66.6%">40</div>
                 <div class="tick-label" style="left: 100%">60</div>
             </div>
 
@@ -308,9 +332,7 @@
         </div>
 
         <div class="controls">
-            <div class="score-box">
-                Munitions : <span id="ammo-val" class="score-number">60</span>
-            </div>
+            
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
                 <div id="list-ships"></div>
@@ -332,7 +354,7 @@
                 <button class="btn-nav" onclick="changerValeur('inputY', 1)">+</button>
             </div>
 
-            <button class="btn-feu" id="btn-fire" onclick="tirer()">FEU !</button>
+            <button class="btn-feu" id="btn-fire" onclick="tirer()">FEU ! (60)</button>
             <div id="info-msg">En attente de tir...</div>
         </div>
     </div>
@@ -341,7 +363,10 @@
         <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
         <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
-        <br>        
+        <br>
+        
+        <button class="btn-cheat" onclick="testVictoire()"hidden>⚡ TEST VICTOIRE</button>
+        
     </div>
 
     <script>
@@ -503,13 +528,20 @@
             dessinerChiffres();
         }
 
+        function mettreAJourAffichageMunitions() {
+            const btnFire = document.getElementById('btn-fire');
+            btnFire.innerText = `FEU ! (${munitionsRestantes})`;
+            if (munitionsRestantes <= 10) {
+                btnFire.style.backgroundColor = "#b71c1c";
+            }
+        }
+
         function tirer() {
             if (jeuFini) return;
 
             let info = document.getElementById('info-msg');
             let inputX = document.getElementById('inputX');
             let inputY = document.getElementById('inputY');
-            let ammoDisplay = document.getElementById('ammo-val');
 
             let x = parseInt(inputX.value);
             let y = parseInt(inputY.value);
@@ -527,11 +559,7 @@
 
             munitionsRestantes--;
             nbCoupsTires++;
-            ammoDisplay.innerText = munitionsRestantes;
-
-            if (munitionsRestantes <= 10) {
-                ammoDisplay.classList.add('low-ammo');
-            }
+            mettreAJourAffichageMunitions();
 
             let col = x + 4;
             let lig = 4 - y;
@@ -601,7 +629,6 @@
             }
         }
 
-        // --- FONCTION DE TRICHE ---
         function testVictoire() {
             let coupsAleatoires = Math.floor(Math.random() * (50 - 14 + 1)) + 14;
             nbCoupsTires = coupsAleatoires;
@@ -619,18 +646,27 @@
             let rangCom = "";
             let rangColor = "";
 
-            if (munitionsRestantes >= 30) { 
+            // NOUVELLES CATÉGORIES ET PALIERS
+            if (munitionsRestantes >= 40) { 
                 rangTitre = "LÉGENDE VIVANTE";
-                rangCom = "Une stratégie militaire parfaite !";
-                rangColor = "#4CAF50"; 
-            } else if (munitionsRestantes >= 15) { 
+                rangCom = "Partie Quasi-Parfaite ! Une précision chirurgicale.";
+                rangColor = "#4CAF50"; // Vert Foncé
+            } else if (munitionsRestantes >= 30) {
                 rangTitre = "GRAND AMIRAL";
+                rangCom = "Une excellente maîtrise du terrain.";
+                rangColor = "#8bc34a"; // Vert Clair
+            } else if (munitionsRestantes >= 20) { 
+                rangTitre = "LIEUTENANT TACTICIEN";
                 rangCom = "Très belle logique, félicitations.";
-                rangColor = "#ffc107"; 
-            } else {
+                rangColor = "#ffc107"; // Jaune
+            } else if (munitionsRestantes >= 5) {
                 rangTitre = "MATELOT DÉBROUILLARD";
-                rangCom = "C'était juste, attention aux munitions !";
-                rangColor = "#ff4d4d"; 
+                rangCom = "C'était laborieux, mais la victoire est là.";
+                rangColor = "#ff9800"; // Orange
+            } else {
+                rangTitre = "MOUSSAILLON DU DIMANCHE";
+                rangCom = "Ouf ! C'est passé à la dernière seconde !";
+                rangColor = "#d32f2f"; // Rouge foncé
             }
 
             const elRank = document.getElementById('final-rank');
@@ -648,6 +684,7 @@
 
         dessinerGrille();
         dessinerChiffres();
+        mettreAJourAffichageMunitions();
 
     </script>
 </body>
