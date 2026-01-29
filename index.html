@@ -58,7 +58,7 @@
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
 
@@ -190,7 +190,7 @@
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
 
-        /* --- NOUVELLE LOGIQUE DE JAUGE (MASQUE INVERSÉ) --- */
+        /* --- JAUGE --- */
         .gauge-container {
             position: relative;
             width: 100%;
@@ -244,11 +244,17 @@
         }
         .btn-replay:hover { transform: scale(1.05); background-color: #45a049; }
 
+        /* --- MOBILE --- */
         @media (max-width: 768px) {
             .game-container { flex-direction: column; align-items: center; padding: 10px; gap: 15px; }
             .controls { width: 100%; }
+            
+            /* ORDRE DES ÉLÉMENTS */
             h3, .input-group, .btn-feu, #info-msg { order: 1; }
-            .score-box { order: 2; margin-top: 20px; margin-bottom: 10px;}
+            
+            /* ON CACHE LA GROSSE BOITE DE SCORE SUR MOBILE POUR GAGNER DE LA PLACE */
+            .score-box { display: none; }
+            
             .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
             .input-group { justify-content: center; } 
             canvas { width: 320px; height: 320px; }
@@ -311,6 +317,7 @@
             <div class="score-box">
                 Munitions : <span id="ammo-val" class="score-number">60</span>
             </div>
+            
             <div class="targets">
                 <strong>🎯 CIBLES :</strong>
                 <div id="list-ships"></div>
@@ -332,7 +339,7 @@
                 <button class="btn-nav" onclick="changerValeur('inputY', 1)">+</button>
             </div>
 
-            <button class="btn-feu" id="btn-fire" onclick="tirer()">FEU !</button>
+            <button class="btn-feu" id="btn-fire" onclick="tirer()">FEU ! (60)</button>
             <div id="info-msg">En attente de tir...</div>
         </div>
     </div>
@@ -341,8 +348,9 @@
         <span class="author-name">Raphaël CHAILLIÉ</span><br>
         Projet Open Source - Licence Copyleft (ɔ)<br>
         <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
-        <br>        
-    </div>
+        <br>
+        
+        </div>
 
     <script>
         // --- 1. INITIALISATION ---
@@ -503,13 +511,30 @@
             dessinerChiffres();
         }
 
+        // FONCTION CENTRALE DE MISE À JOUR DES MUNITIONS
+        function mettreAJourAffichageMunitions() {
+            // 1. Mise à jour de la boite PC
+            const ammoDisplay = document.getElementById('ammo-val');
+            ammoDisplay.innerText = munitionsRestantes;
+            if (munitionsRestantes <= 10) {
+                ammoDisplay.classList.add('low-ammo');
+            }
+
+            // 2. Mise à jour du bouton FEU (pour Mobile)
+            const btnFire = document.getElementById('btn-fire');
+            btnFire.innerText = `FEU ! (${munitionsRestantes})`;
+            if (munitionsRestantes <= 10) {
+                // Petit effet d'urgence aussi sur le bouton
+                btnFire.style.backgroundColor = "#b71c1c"; // Rouge plus foncé
+            }
+        }
+
         function tirer() {
             if (jeuFini) return;
 
             let info = document.getElementById('info-msg');
             let inputX = document.getElementById('inputX');
             let inputY = document.getElementById('inputY');
-            let ammoDisplay = document.getElementById('ammo-val');
 
             let x = parseInt(inputX.value);
             let y = parseInt(inputY.value);
@@ -527,11 +552,9 @@
 
             munitionsRestantes--;
             nbCoupsTires++;
-            ammoDisplay.innerText = munitionsRestantes;
-
-            if (munitionsRestantes <= 10) {
-                ammoDisplay.classList.add('low-ammo');
-            }
+            
+            // On met à jour l'affichage partout (Boite PC + Bouton Mobile)
+            mettreAJourAffichageMunitions();
 
             let col = x + 4;
             let lig = 4 - y;
@@ -601,7 +624,6 @@
             }
         }
 
-        // --- FONCTION DE TRICHE ---
         function testVictoire() {
             let coupsAleatoires = Math.floor(Math.random() * (50 - 14 + 1)) + 14;
             nbCoupsTires = coupsAleatoires;
@@ -648,6 +670,8 @@
 
         dessinerGrille();
         dessinerChiffres();
+        // Init affichage bouton
+        mettreAJourAffichageMunitions();
 
     </script>
 </body>
