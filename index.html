@@ -138,7 +138,6 @@
             margin-top: 10px;
             opacity: 0.5;
         }
-        /* Quand on le survole, il devient bien visible */
         .btn-cheat:hover { opacity: 1; }
 
         #info-msg {
@@ -173,7 +172,7 @@
             border-radius: 15px;
             text-align: center;
             max-width: 90%;
-            width: 450px; 
+            width: 550px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             animation: popIn 0.3s ease-out;
         }
@@ -191,16 +190,24 @@
         .victory-rank { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 10px; }
         .rank-label { font-size: 0.8em; text-transform: uppercase; color: #999; letter-spacing: 1px; }
 
-        /* --- JAUGE --- */
+        /* --- JAUGE (5 ZONES) --- */
         .gauge-container {
             position: relative;
             width: 100%;
             height: 30px;
+            /* 0-5 : Rouge foncé (Moussaillon)
+               5-20 : Orange (Matelot)
+               20-30 : Jaune (Lieutenant)
+               30-40 : Vert clair (Grand Amiral)
+               40+ : Vert foncé (Légende)
+            */
             background: linear-gradient(90deg, 
-                #d32f2f 0%, #d32f2f 10%, 
-                #ff9800 10%, #ff9800 33%, 
-                #ffc107 33%, #ffc107 66%, 
-                #4CAF50 66%, #4CAF50 100%);
+                #d32f2f 0%, #d32f2f 8.3%,   
+                #ff9800 8.3%, #ff9800 33.3%, 
+                #ffc107 33.3%, #ffc107 50%,  
+                #8bc34a 50%, #8bc34a 66.6%,  
+                #4CAF50 66.6%, #4CAF50 100% 
+            );
             border-radius: 15px;
             margin: 20px 0 0 0;
             overflow: hidden;
@@ -226,6 +233,11 @@
             z-index: 2;
         }
         
+        .gauge-tick-danger {
+            background-color: rgba(255, 0, 0, 0.8);
+            width: 3px;
+        }
+
         .tick-label {
             position: absolute;
             top: 5px;
@@ -258,6 +270,7 @@
             .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
             .input-group { justify-content: center; } 
             canvas { width: 320px; height: 320px; }
+            .modal-content { width: 95%; padding: 20px; }
         }
     </style>
 </head>
@@ -274,14 +287,19 @@
 
             <div class="gauge-container">
                 <div id="gauge-mask" class="gauge-mask"></div>
-                <div class="gauge-tick" style="left: 33%;"></div> 
-                <div class="gauge-tick" style="left: 66%;"></div> 
+                
+                <div class="gauge-tick gauge-tick-danger" style="left: 8.3%;"></div> 
+                <div class="gauge-tick" style="left: 33.3%;"></div> 
+                <div class="gauge-tick" style="left: 50%;"></div> 
+                <div class="gauge-tick" style="left: 66.6%;"></div> 
             </div>
 
             <div style="position: relative; height: 40px; width: 100%;">
                 <div class="tick-label" style="left: 0%">0</div>
-                <div class="tick-label" style="left: 33%">20</div>
-                <div class="tick-label" style="left: 66%">40</div>
+                <div class="tick-label" style="left: 8.3%; color:#d32f2f;">5</div>
+                <div class="tick-label" style="left: 33.3%">20</div>
+                <div class="tick-label" style="left: 50%">30</div>
+                <div class="tick-label" style="left: 66.6%">40</div>
                 <div class="tick-label" style="left: 100%">60</div>
             </div>
 
@@ -637,22 +655,27 @@
             let rangCom = "";
             let rangColor = "";
 
+            // NOUVELLES CATÉGORIES ET PALIERS
             if (munitionsRestantes >= 40) { 
                 rangTitre = "LÉGENDE VIVANTE";
                 rangCom = "Partie Quasi-Parfaite ! Une précision chirurgicale.";
-                rangColor = "#4CAF50"; 
-            } else if (munitionsRestantes >= 20) { 
+                rangColor = "#4CAF50"; // Vert Foncé
+            } else if (munitionsRestantes >= 30) {
                 rangTitre = "GRAND AMIRAL";
+                rangCom = "Une excellente maîtrise du terrain.";
+                rangColor = "#8bc34a"; // Vert Clair
+            } else if (munitionsRestantes >= 20) { 
+                rangTitre = "LIEUTENANT TACTICIEN";
                 rangCom = "Très belle logique, félicitations.";
-                rangColor = "#ffc107"; 
+                rangColor = "#ffc107"; // Jaune
             } else if (munitionsRestantes >= 5) {
                 rangTitre = "MATELOT DÉBROUILLARD";
                 rangCom = "C'était laborieux, mais la victoire est là.";
-                rangColor = "#ff9800"; 
+                rangColor = "#ff9800"; // Orange
             } else {
                 rangTitre = "MOUSSAILLON DU DIMANCHE";
                 rangCom = "Ouf ! C'est passé à la dernière seconde !";
-                rangColor = "#d32f2f"; 
+                rangColor = "#d32f2f"; // Rouge foncé
             }
 
             const elRank = document.getElementById('final-rank');
