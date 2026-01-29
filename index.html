@@ -138,6 +138,7 @@
             margin-top: 10px;
             opacity: 0.5;
         }
+        /* Quand on le survole, il devient bien visible */
         .btn-cheat:hover { opacity: 1; }
 
         #info-msg {
@@ -195,7 +196,11 @@
             position: relative;
             width: 100%;
             height: 30px;
-            background: linear-gradient(90deg, #ff4d4d 0%, #ff4d4d 25%, #ffc107 25%, #ffc107 50%, #4CAF50 50%, #4CAF50 100%);
+            background: linear-gradient(90deg, 
+                #d32f2f 0%, #d32f2f 10%, 
+                #ff9800 10%, #ff9800 33%, 
+                #ffc107 33%, #ffc107 66%, 
+                #4CAF50 66%, #4CAF50 100%);
             border-radius: 15px;
             margin: 20px 0 0 0;
             overflow: hidden;
@@ -248,13 +253,8 @@
         @media (max-width: 768px) {
             .game-container { flex-direction: column; align-items: center; padding: 10px; gap: 15px; }
             .controls { width: 100%; }
-            
-            /* ORDRE DES ÉLÉMENTS */
             h3, .input-group, .btn-feu, #info-msg { order: 1; }
-            
-            /* ON CACHE LA GROSSE BOITE DE SCORE SUR MOBILE POUR GAGNER DE LA PLACE */
             .score-box { display: none; }
-            
             .targets { order: 3; margin-top: 20px; border-top: 2px dashed #eee; }
             .input-group { justify-content: center; } 
             canvas { width: 320px; height: 320px; }
@@ -274,14 +274,14 @@
 
             <div class="gauge-container">
                 <div id="gauge-mask" class="gauge-mask"></div>
-                <div class="gauge-tick" style="left: 25%;"></div> 
-                <div class="gauge-tick" style="left: 50%;"></div> 
+                <div class="gauge-tick" style="left: 33%;"></div> 
+                <div class="gauge-tick" style="left: 66%;"></div> 
             </div>
 
             <div style="position: relative; height: 40px; width: 100%;">
                 <div class="tick-label" style="left: 0%">0</div>
-                <div class="tick-label" style="left: 25%">15</div>
-                <div class="tick-label" style="left: 50%">30</div>
+                <div class="tick-label" style="left: 33%">20</div>
+                <div class="tick-label" style="left: 66%">40</div>
                 <div class="tick-label" style="left: 100%">60</div>
             </div>
 
@@ -350,7 +350,9 @@
         <a href="https://github.com/Raph81212/bataille-navalle">Voir le code sur GitHub</a>
         <br>
         
-        </div>
+        <button class="btn-cheat" onclick="testVictoire()">⚡ TEST VICTOIRE</button>
+        
+    </div>
 
     <script>
         // --- 1. INITIALISATION ---
@@ -511,21 +513,17 @@
             dessinerChiffres();
         }
 
-        // FONCTION CENTRALE DE MISE À JOUR DES MUNITIONS
         function mettreAJourAffichageMunitions() {
-            // 1. Mise à jour de la boite PC
             const ammoDisplay = document.getElementById('ammo-val');
             ammoDisplay.innerText = munitionsRestantes;
             if (munitionsRestantes <= 10) {
                 ammoDisplay.classList.add('low-ammo');
             }
 
-            // 2. Mise à jour du bouton FEU (pour Mobile)
             const btnFire = document.getElementById('btn-fire');
             btnFire.innerText = `FEU ! (${munitionsRestantes})`;
             if (munitionsRestantes <= 10) {
-                // Petit effet d'urgence aussi sur le bouton
-                btnFire.style.backgroundColor = "#b71c1c"; // Rouge plus foncé
+                btnFire.style.backgroundColor = "#b71c1c";
             }
         }
 
@@ -552,8 +550,6 @@
 
             munitionsRestantes--;
             nbCoupsTires++;
-            
-            // On met à jour l'affichage partout (Boite PC + Bouton Mobile)
             mettreAJourAffichageMunitions();
 
             let col = x + 4;
@@ -641,18 +637,22 @@
             let rangCom = "";
             let rangColor = "";
 
-            if (munitionsRestantes >= 30) { 
+            if (munitionsRestantes >= 40) { 
                 rangTitre = "LÉGENDE VIVANTE";
-                rangCom = "Une stratégie militaire parfaite !";
+                rangCom = "Partie Quasi-Parfaite ! Une précision chirurgicale.";
                 rangColor = "#4CAF50"; 
-            } else if (munitionsRestantes >= 15) { 
+            } else if (munitionsRestantes >= 20) { 
                 rangTitre = "GRAND AMIRAL";
                 rangCom = "Très belle logique, félicitations.";
                 rangColor = "#ffc107"; 
-            } else {
+            } else if (munitionsRestantes >= 5) {
                 rangTitre = "MATELOT DÉBROUILLARD";
-                rangCom = "C'était juste, attention aux munitions !";
-                rangColor = "#ff4d4d"; 
+                rangCom = "C'était laborieux, mais la victoire est là.";
+                rangColor = "#ff9800"; 
+            } else {
+                rangTitre = "MOUSSAILLON DU DIMANCHE";
+                rangCom = "Ouf ! C'est passé à la dernière seconde !";
+                rangColor = "#d32f2f"; 
             }
 
             const elRank = document.getElementById('final-rank');
@@ -670,7 +670,6 @@
 
         dessinerGrille();
         dessinerChiffres();
-        // Init affichage bouton
         mettreAJourAffichageMunitions();
 
     </script>
