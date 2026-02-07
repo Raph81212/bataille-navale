@@ -90,4 +90,3 @@ Ce projet contient deux versions du jeu :
 * Licence : Copyleft (ɔ) - Vous êtes libre de partager et modifier ce code.
 
 ---
-*Fait avec ❤️ et des maths.*

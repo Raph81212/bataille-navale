@@ -383,6 +383,8 @@
         let nbCoupsTires = 0; 
         let munitionsRestantes = MAX_MUNITIONS;
         let jeuFini = false;
+        let flotteOriginale = {};
+        let sunkShips = [];
 
         const typesBateaux = [
             {nom: "Porte-Avions", taille: 5},
@@ -416,6 +418,7 @@
                             coords.push(`${c_dep + k},${l_dep}`);
                         }
                         flotte[bateau.nom] = coords;
+                        flotteOriginale[bateau.nom] = [...coords];
                         place = true;
                     }
                 } else { // Vertical
@@ -430,6 +433,7 @@
                             coords.push(`${c_dep},${l_dep + k}`);
                         }
                         flotte[bateau.nom] = coords;
+                        flotteOriginale[bateau.nom] = [...coords];
                         place = true;
                     }
                 }
@@ -499,11 +503,80 @@
             }
         }
 
+        function dessinerContourBateau(coords) {
+            // 1. Parse and convert to game coordinates (x, y from -4 to 4)
+            const points = coords.map(cStr => {
+                const [c, l] = cStr.split(',').map(Number);
+                return {x: c - 4, y: 4 - l};
+            });
+
+            // 2. Find min/max x and y
+            const minX = Math.min(...points.map(p => p.x));
+            const maxX = Math.max(...points.map(p => p.x));
+            const minY = Math.min(...points.map(p => p.y));
+            const maxY = Math.max(...points.map(p => p.y));
+
+            // 3. Determine bounding box in canvas coordinates
+            const padding = ECHELLE * 0.4; // Padding réduit pour ne pas empiéter sur les cases voisines
+            const x_start_canvas = CENTRE_X + (minX * ECHELLE) - padding;
+            const x_end_canvas = CENTRE_X + (maxX * ECHELLE) + padding;
+            const y_start_canvas = CENTRE_Y - (maxY * ECHELLE) - padding;
+            const y_end_canvas = CENTRE_Y - (minY * ECHELLE) + padding;
+            
+            const width = x_end_canvas - x_start_canvas;
+            const height = y_end_canvas - y_start_canvas;
+
+            // 4. Dessine le contour du bateau avec une proue et une poupe
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+
+            ctx.beginPath();
+            if (width > height) { // Bateau horizontal (proue à droite)
+                const midY = y_start_canvas + height / 2;
+                const bowPointiness = ECHELLE / 2;
+
+                // Poupe (plate, à gauche)
+                ctx.moveTo(x_start_canvas, y_start_canvas);
+                // Côté supérieur
+                ctx.lineTo(x_end_canvas - bowPointiness, y_start_canvas);
+                // Proue (pointue, à droite)
+                ctx.lineTo(x_end_canvas, midY);
+                ctx.lineTo(x_end_canvas - bowPointiness, y_end_canvas);
+                // Côté inférieur
+                ctx.lineTo(x_start_canvas, y_end_canvas);
+                ctx.closePath(); // Dessine la poupe plate
+            } else { // Bateau vertical (proue en haut)
+                const midX = x_start_canvas + width / 2;
+                const bowPointiness = ECHELLE / 2;
+
+                // Poupe (plate, en bas)
+                ctx.moveTo(x_start_canvas, y_end_canvas);
+                // Côté gauche
+                ctx.lineTo(x_start_canvas, y_start_canvas + bowPointiness);
+                // Proue (pointue, en haut)
+                ctx.lineTo(midX, y_start_canvas);
+                ctx.lineTo(x_end_canvas, y_start_canvas + bowPointiness);
+                // Côté droit
+                ctx.lineTo(x_end_canvas, y_end_canvas);
+                ctx.closePath(); // Dessine la poupe plate
+            }
+            ctx.stroke();
+            ctx.fill();
+        }
+
         let historiqueTirs = []; 
 
         function redessinerTout() {
             ctx.clearRect(0, 0, 400, 400);
             dessinerGrille();
+
+            sunkShips.forEach(coords => {
+                dessinerContourBateau(coords);
+            });
+
             historiqueTirs.forEach(tir => {
                 let px = CENTRE_X + (tir.x * ECHELLE);
                 let py = CENTRE_Y - (tir.y * ECHELLE);
@@ -574,7 +647,7 @@
 
             if(val === 0) { // EAU
                 grille[lig][col] = 2;
-                historiqueTirs.push({x: x, y: y, couleur: "grey"});
+                historiqueTirs.push({x: x, y: y, couleur: "dodgerblue"});
                 info.style.color = "black";
                 info.innerText = `Tir en (${x}, ${y}) : PLOUF !`;
             } 
@@ -598,6 +671,7 @@
                 }
 
                 if(nomCoule) {
+                    sunkShips.push(flotteOriginale[nomCoule]);
                     delete flotte[cleASupprimer];
                     info.style.color = "red";
                     info.innerText = `BOUM ! ${nomCoule} COULÉ !`;
